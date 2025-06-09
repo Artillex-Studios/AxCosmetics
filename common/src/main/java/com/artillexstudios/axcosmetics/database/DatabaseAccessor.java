@@ -1,0 +1,19 @@
+package com.artillexstudios.axcosmetics.database;
+
+import com.artillexstudios.axapi.database.DatabaseHandler;
+import com.artillexstudios.axcosmetics.user.User;
+
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
+public class DatabaseAccessor {
+    private final DatabaseHandler handler;
+
+    public DatabaseAccessor(DatabaseHandler handler) {
+        this.handler = handler;
+    }
+
+    public CompletableFuture<User> loadUser(UUID uuid) {
+        return CompletableFuture.completedFuture(new User());
+    }
+}

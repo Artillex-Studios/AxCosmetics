@@ -1,0 +1,8 @@
+backpack:
+  slot: "backpack"
+  type: "display_entity"
+  # etc.
+helmet:
+  slot: "helmet"
+  type: "armor"
+  # etc.

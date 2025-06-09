@@ -1,0 +1,5 @@
+prefix: ""
+
+reload:
+  success: "<#00FF00>Successfully reloaded the configurations of the plugin in <white><time></white>ms!"
+  fail: "<#FF0000>There were some issues while reloading file(s): <white><files></white>! Please check out the console for more information! <br>Reload done in: <white><time></white>ms!"

@@ -1,0 +1,5 @@
+name: "AxCosmetics"
+main: "com.artillexstudios.axcosmetics.AxCosmeticsPlugin"
+version: "${version}"
+api-version: "1.20"
+folia-supported: true
