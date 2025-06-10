@@ -1,5 +1,6 @@
 package com.artillexstudios.axcosmetics.api;
 
+import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlots;
 import com.artillexstudios.axcosmetics.api.user.UserRepository;
 import net.kyori.adventure.util.Services;
 
@@ -10,6 +11,8 @@ public interface AxCosmeticsAPI {
     }
 
     UserRepository userRepository();
+
+    CosmeticSlots cosmeticSlots();
 
     final class Holder {
         private static final AxCosmeticsAPI INSTANCE = Services.service(AxCosmeticsAPI.class).orElseThrow();

@@ -1,8 +1,13 @@
 package com.artillexstudios.axcosmetics.api.user;
 
+import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
+import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
+import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Collection;
 
 public interface User {
 
@@ -24,4 +29,21 @@ public interface User {
      */
     @Nullable
     Player onlinePlayer();
+
+    @Nullable
+    <T extends CosmeticConfig> Cosmetic<T> getCosmetic(CosmeticSlot slot);
+
+    <T extends CosmeticConfig> void addCosmetic(Cosmetic<T> cosmetic);
+
+    void updateCosmetic(CosmeticSlot slot);
+
+    Collection<Cosmetic<?>> getCosmetics();
+
+    Collection<Cosmetic<?>> getEquippedCosmetics();
+
+    void equipCosmetic(Cosmetic<?> cosmetic);
+
+    boolean unequipCosmetic(Cosmetic<?> cosmetic);
+
+    boolean unequipCosmetic(CosmeticSlot slot);
 }

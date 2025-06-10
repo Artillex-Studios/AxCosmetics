@@ -1,7 +1,9 @@
 package com.artillexstudios.axcosmetics.listener;
 
 import com.artillexstudios.axapi.utils.logging.LogUtils;
+import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.exception.UserAlreadyLoadedException;
+import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.user.UserRepository;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,7 +28,9 @@ public final class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerQuitEvent(PlayerQuitEvent event) {
-        // TODO: remove cosmetics
-        this.repository.disconnect(event.getPlayer().getUniqueId());
+        User user = this.repository.disconnect(event.getPlayer().getUniqueId());
+        for (Cosmetic<?> equippedCosmetic : user.getEquippedCosmetics()) {
+            equippedCosmetic.despawn();
+        }
     }
 }

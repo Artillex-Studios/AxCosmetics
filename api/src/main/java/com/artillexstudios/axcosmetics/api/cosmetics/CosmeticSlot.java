@@ -1,6 +1,4 @@
 package com.artillexstudios.axcosmetics.api.cosmetics;
 
-public interface CosmeticSlot {
-
-    String name();
+public record CosmeticSlot(String name) {
 }

@@ -30,7 +30,6 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
 
     @Override
     public void spawn() {
-        super.spawn();
         if (this.player == null) {
             throw new IllegalStateException();
         }
@@ -78,15 +77,13 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
 
     @Override
     public void despawn() {
-        super.despawn();
-
         this.entity.remove();
         this.firstPersonEntity.remove();
         this.firstPersonInteractionEntity.remove();
     }
 
     @Override
-    public Collection<Class<? extends CosmeticSlot>> validSlots() {
+    public Collection<CosmeticSlot> validSlots() {
         return List.of();
     }
 }

@@ -2,14 +2,21 @@ package com.artillexstudios.axcosmetics.cosmetics.config;
 
 import com.artillexstudios.axapi.items.WrappedItemStack;
 import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
-// TODO: Better configs
-public class FirstPersonBackpackConfig extends CosmeticConfig {
-    private double height = 1.5d;
-    private WrappedItemStack itemStack = WrappedItemStack.wrap(new ItemStack(Material.AIR));
-    private WrappedItemStack firstPersonItemStack = WrappedItemStack.wrap(new ItemStack(Material.AIR));;
+import java.util.Map;
+
+public final class FirstPersonBackpackConfig extends CosmeticConfig {
+    private final double height;
+    private final WrappedItemStack itemStack;
+    private final WrappedItemStack firstPersonItemStack;
+
+
+    public FirstPersonBackpackConfig(Map<String, Object> config) {
+        super(config);
+        this.height = this.getDouble("height");
+        this.itemStack = this.get("item-stack", WrappedItemStack.class);
+        this.firstPersonItemStack = this.get("first-person-item-stack", WrappedItemStack.class);
+    }
 
     public double height() {
         return this.height;

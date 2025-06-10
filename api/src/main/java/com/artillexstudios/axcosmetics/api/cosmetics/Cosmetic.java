@@ -15,7 +15,6 @@ public abstract class Cosmetic<T extends CosmeticConfig> {
     private final User user;
     private final CosmeticData data;
     private final T config;
-    private boolean spawned = false;
 
     public Cosmetic(User user, CosmeticData data, T config) {
         this.user = user;
@@ -26,15 +25,11 @@ public abstract class Cosmetic<T extends CosmeticConfig> {
     public abstract void update();
 
     public void spawn() {
-        this.spawned = true;
+
     }
 
     public void despawn() {
-        this.spawned = false;
-    }
 
-    public boolean spawned() {
-        return this.spawned;
     }
 
     public T config() {
@@ -49,5 +44,9 @@ public abstract class Cosmetic<T extends CosmeticConfig> {
         return this.data;
     }
 
-    public abstract Collection<Class<? extends CosmeticSlot>> validSlots();
+    public CosmeticSlot slot() {
+        return this.config.slot();
+    }
+
+    public abstract Collection<CosmeticSlot> validSlots();
 }

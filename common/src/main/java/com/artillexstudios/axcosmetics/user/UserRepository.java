@@ -6,6 +6,7 @@ import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.database.DatabaseAccessor;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.bukkit.entity.Player;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 public class UserRepository implements com.artillexstudios.axcosmetics.api.user.UserRepository {
     private final DatabaseAccessor accessor;
     private final ConcurrentHashMap<UUID, User> loadedUsers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, User> idLoadedUsers = new ConcurrentHashMap<>();
     private final Cache<UUID, User> tempUsers = Caffeine.newBuilder()
             .expireAfterAccess(5, TimeUnit.MINUTES)
             .maximumSize(200)
@@ -38,6 +40,11 @@ public class UserRepository implements com.artillexstudios.axcosmetics.api.user.
     }
 
     @Override
+    public User getUserIfLoadedImmediately(int id) {
+        return this.idLoadedUsers.get(id);
+    }
+
+    @Override
     public CompletableFuture<User> loadUser(UUID uuid) throws UserAlreadyLoadedException {
         if (this.loadedUsers.containsKey(uuid)) {
             throw new UserAlreadyLoadedException();
@@ -47,6 +54,10 @@ public class UserRepository implements com.artillexstudios.axcosmetics.api.user.
         if (user != null) {
             this.tempUsers.invalidate(uuid);
             this.loadedUsers.put(uuid, user);
+            Player onlinePlayer = user.onlinePlayer();
+            if (onlinePlayer != null) {
+                this.idLoadedUsers.put(onlinePlayer.getEntityId(), user);
+            }
             return CompletableFuture.completedFuture(user);
         }
 
@@ -69,6 +80,11 @@ public class UserRepository implements com.artillexstudios.axcosmetics.api.user.
                 temp = this.tempUsers.asMap().putIfAbsent(uuid, loaded);
             }
 
+            Player onlinePlayer = loaded.onlinePlayer();
+            if (onlinePlayer != null) {
+                this.idLoadedUsers.put(onlinePlayer.getEntityId(), loaded);
+            }
+
             return temp == null ? loaded : temp;
         });
     }
@@ -83,6 +99,11 @@ public class UserRepository implements com.artillexstudios.axcosmetics.api.user.
         User user = this.loadedUsers.remove(uuid);
 
         if (user != null) {
+            Player onlinePlayer = user.onlinePlayer();
+            if (onlinePlayer != null) {
+                this.idLoadedUsers.remove(onlinePlayer.getEntityId());
+            }
+
             this.tempUsers.put(uuid, user);
         }
 
