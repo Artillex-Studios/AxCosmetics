@@ -9,8 +9,8 @@ import java.util.Map;
 public final class ArmorCosmeticConfig extends CosmeticConfig {
     private final WrappedItemStack itemStack;
 
-    public ArmorCosmeticConfig(Map<String, Object> config) {
-        super(config);
+    public ArmorCosmeticConfig(String name, Map<String, Object> config) {
+        super(name, config);
         this.itemStack = this.get("item-stack", WrappedItemStack.class);
     }
 

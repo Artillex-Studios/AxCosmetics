@@ -10,9 +10,8 @@ public final class FirstPersonBackpackConfig extends CosmeticConfig {
     private final WrappedItemStack itemStack;
     private final WrappedItemStack firstPersonItemStack;
 
-
-    public FirstPersonBackpackConfig(Map<String, Object> config) {
-        super(config);
+    public FirstPersonBackpackConfig(String name, Map<String, Object> config) {
+        super(name, config);
         this.height = this.getDouble("height");
         this.itemStack = this.get("item-stack", WrappedItemStack.class);
         this.firstPersonItemStack = this.get("first-person-item-stack", WrappedItemStack.class);

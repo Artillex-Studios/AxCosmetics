@@ -22,7 +22,7 @@ public class ArmorCosmeticPacketListener extends PacketListener {
     public void onPacketSending(PacketEvent event) {
         if (event.type() == ClientboundPacketTypes.ADD_ENTITY) {
             ClientboundAddEntityWrapper wrapper = new ClientboundAddEntityWrapper(event);
-            User user = AxCosmeticsAPI.instance().userRepository().getUserIfLoadedImmediately(wrapper.uuid());
+            User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(wrapper.uuid());
             if (user == null) {
                 return;
             }
@@ -35,7 +35,7 @@ public class ArmorCosmeticPacketListener extends PacketListener {
             ArmorCosmetic.sendEquipmentPacket(player.getEntityId(), event.player());
         } else if (event.type() == ClientboundPacketTypes.SET_EQUIPMENT) {
             ClientboundSetEquipmentWrapper wrapper = new ClientboundSetEquipmentWrapper(event);
-            User user = AxCosmeticsAPI.instance().userRepository().getUserIfLoadedImmediately(wrapper.entityId());
+            User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(wrapper.entityId());
             if (user == null) {
                 return;
             }
@@ -65,7 +65,7 @@ public class ArmorCosmeticPacketListener extends PacketListener {
             wrapper.markDirty();
         } else if (event.type() == ClientboundPacketTypes.CONTAINER_SET_SLOT) {
             // TODO: Optimize maybe
-            User user = AxCosmeticsAPI.instance().userRepository().getUserIfLoadedImmediately(event.player().getUniqueId());
+            User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(event.player().getUniqueId());
             if (user == null) {
                 return;
             }

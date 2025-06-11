@@ -36,7 +36,7 @@ public class AxCosmeticsCommand {
     public static void register() {
         new CommandTree("cosmetics")
                 .executesPlayer((sender, args) -> {
-                    User user = AxCosmeticsAPI.instance().userRepository().getUserIfLoadedImmediately(sender.getUniqueId());
+                    User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender.getUniqueId());
 
 //                    firstPersonBackpack(sender, user);
                     helmet(user);
@@ -45,13 +45,13 @@ public class AxCosmeticsCommand {
     }
 
     private static void helmet(User user) {
-        ArmorCosmetic cosmetic = new ArmorCosmetic(user, new CosmeticData(0, 0, 0), new ArmorCosmeticConfig(Map.of("slot", "helmet", "item-stack", Map.of("material", "paper", "custom-model-data", 1002))));
+        ArmorCosmetic cosmetic = new ArmorCosmetic(user, new CosmeticData(0, 0, 0), new ArmorCosmeticConfig(null, Map.of("slot", "helmet", "item-stack", Map.of("material", "paper", "custom-model-data", 1002))));
         user.addCosmetic(cosmetic);
         user.equipCosmetic(cosmetic);
     }
 
     private static void firstPersonBackpack(Player sender, User user) {
-        FirstPersonBackpackCosmetic cosmetic = new FirstPersonBackpackCosmetic(user, new CosmeticData(0, 0, 0), new FirstPersonBackpackConfig(Map.of("slot", "backpack", "height", 1.5, "item-stack", Map.of("material", "paper", "custom-model-data", 1000), "first-person-item-stack", Map.of("material", "paper", "custom-model-data", 11000))));
+        FirstPersonBackpackCosmetic cosmetic = new FirstPersonBackpackCosmetic(user, new CosmeticData(0, 0, 0), new FirstPersonBackpackConfig(null, Map.of("slot", "backpack", "height", 1.5, "item-stack", Map.of("material", "paper", "custom-model-data", 1000), "first-person-item-stack", Map.of("material", "paper", "custom-model-data", 11000))));
         user.addCosmetic(cosmetic);
         cosmetic.spawn();
 

@@ -20,6 +20,10 @@ public abstract class Cosmetic<T extends CosmeticConfig> {
         this.user = user;
         this.data = data;
         this.config = config;
+
+        if (!this.validSlots().contains(config.slot())) {
+            throw new IllegalStateException();
+        }
     }
 
     public abstract void update();

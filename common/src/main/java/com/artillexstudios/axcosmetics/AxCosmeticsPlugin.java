@@ -17,6 +17,7 @@ import com.artillexstudios.axcosmetics.command.AxCosmeticsCommand;
 import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.config.Language;
 import com.artillexstudios.axcosmetics.cosmetics.CosmeticSlots;
+import com.artillexstudios.axcosmetics.cosmetics.config.CosmeticConfigs;
 import com.artillexstudios.axcosmetics.database.DatabaseAccessor;
 import com.artillexstudios.axcosmetics.entitymeta.InteractionMeta;
 import com.artillexstudios.axcosmetics.listener.ArmorCosmeticPacketListener;
@@ -28,6 +29,7 @@ import org.bukkit.entity.EntityType;
 public final class AxCosmeticsPlugin extends AxPlugin {
     private static AxCosmeticsPlugin instance;
     private UserRepository userRepository;
+    private CosmeticConfigs cosmeticConfigs;
     private CosmeticSlots slots;
 
     @Override
@@ -52,6 +54,7 @@ public final class AxCosmeticsPlugin extends AxPlugin {
         Language.reload();
         this.userRepository = new UserRepository(new DatabaseAccessor(new DatabaseHandler(this, Config.database)));
         this.slots = new CosmeticSlots();
+        this.cosmeticConfigs = new CosmeticConfigs();
         AsyncUtils.setup(Config.asyncProcessorPoolSize);
         Config.database.tablePrefix(Config.tablePrefix);
 
@@ -92,5 +95,9 @@ public final class AxCosmeticsPlugin extends AxPlugin {
 
     public CosmeticSlots slots() {
         return this.slots;
+    }
+
+    public CosmeticConfigs cosmeticConfigs() {
+        return this.cosmeticConfigs;
     }
 }

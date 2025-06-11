@@ -2,6 +2,7 @@ package com.artillexstudios.axcosmetics.api;
 
 import com.artillexstudios.axcosmetics.AxCosmeticsPlugin;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlots;
+import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfigs;
 import com.artillexstudios.axcosmetics.api.user.UserRepository;
 
 public final class AxCosmeticsAPIImpl implements AxCosmeticsAPI {
@@ -14,5 +15,10 @@ public final class AxCosmeticsAPIImpl implements AxCosmeticsAPI {
     @Override
     public CosmeticSlots cosmeticSlots() {
         return AxCosmeticsPlugin.instance().slots();
+    }
+
+    @Override
+    public CosmeticConfigs cosmeticConfigs() {
+        return AxCosmeticsPlugin.instance().cosmeticConfigs();
     }
 }
