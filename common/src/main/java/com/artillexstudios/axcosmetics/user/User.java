@@ -18,6 +18,7 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
     private final ConcurrentLinkedQueue<Cosmetic<?>> cosmetics = new ConcurrentLinkedQueue<>();
     private final int id;
     private final OfflinePlayer offlinePlayer;
+    private Player onlinePlayer;
     private final DatabaseAccessor accessor;
 
     public User(int id, OfflinePlayer offlinePlayer, DatabaseAccessor accessor) {
@@ -36,9 +37,13 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
         return this.offlinePlayer;
     }
 
+    public void onlinePlayer(Player player) {
+        this.onlinePlayer = player;
+    }
+
     @Override
     public @Nullable Player onlinePlayer() {
-        return this.offlinePlayer instanceof Player player ? player : this.offlinePlayer.getPlayer();
+        return this.onlinePlayer;
     }
 
     @Override

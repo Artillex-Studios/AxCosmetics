@@ -1,12 +1,10 @@
 package com.artillexstudios.axcosmetics.listener;
 
 import com.artillexstudios.axapi.items.WrappedItemStack;
-import com.artillexstudios.axapi.nms.wrapper.ServerPlayerWrapper;
 import com.artillexstudios.axapi.packet.ClientboundPacketTypes;
 import com.artillexstudios.axapi.packet.PacketEvent;
 import com.artillexstudios.axapi.packet.PacketListener;
 import com.artillexstudios.axapi.packet.wrapper.clientbound.ClientboundAddEntityWrapper;
-import com.artillexstudios.axapi.packet.wrapper.clientbound.ClientboundContainerSetSlotWrapper;
 import com.artillexstudios.axapi.packet.wrapper.clientbound.ClientboundSetEquipmentWrapper;
 import com.artillexstudios.axapi.utils.EquipmentSlot;
 import com.artillexstudios.axapi.utils.Pair;
@@ -15,13 +13,10 @@ import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.cosmetics.type.ArmorCosmetic;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ArmorCosmeticPacketListener extends PacketListener {
-    private final EquipmentSlot[] slots = EquipmentSlot.values();
 
     @Override
     public void onPacketSending(PacketEvent event) {
@@ -69,6 +64,7 @@ public class ArmorCosmeticPacketListener extends PacketListener {
 
             wrapper.markDirty();
         } else if (event.type() == ClientboundPacketTypes.CONTAINER_SET_SLOT) {
+            // TODO: Optimize maybe
             User user = AxCosmeticsAPI.instance().userRepository().getUserIfLoadedImmediately(event.player().getUniqueId());
             if (user == null) {
                 return;

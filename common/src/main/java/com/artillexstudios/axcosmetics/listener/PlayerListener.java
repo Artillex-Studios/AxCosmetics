@@ -20,7 +20,12 @@ public final class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerJoinEvent(PlayerJoinEvent event) {
         try {
-            this.repository.loadUser(event.getPlayer().getUniqueId());
+            this.repository.loadUser(event.getPlayer().getUniqueId()).thenAccept(user -> {
+                ((com.artillexstudios.axcosmetics.user.User) user).onlinePlayer(event.getPlayer());
+                for (Cosmetic<?> cosmetic : user.getEquippedCosmetics()) {
+                    cosmetic.spawn();
+                }
+            });
         } catch (UserAlreadyLoadedException exception) {
             LogUtils.error("Failed to load already loaded user {}!", event.getPlayer().getName(), exception);
         }
@@ -32,5 +37,6 @@ public final class PlayerListener implements Listener {
         for (Cosmetic<?> equippedCosmetic : user.getEquippedCosmetics()) {
             equippedCosmetic.despawn();
         }
+        ((com.artillexstudios.axcosmetics.user.User) user).onlinePlayer(null);
     }
 }

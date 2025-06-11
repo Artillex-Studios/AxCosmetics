@@ -22,7 +22,7 @@ public final class ArmorCosmeticConfig extends CosmeticConfig {
             case "boots" -> EquipmentSlot.BOOTS;
             case "main_hand" -> EquipmentSlot.MAIN_HAND;
             case "off_hand" -> EquipmentSlot.OFF_HAND;
-            case null, default -> null;
+            case null, default -> throw new IllegalStateException();
         };
     }
 

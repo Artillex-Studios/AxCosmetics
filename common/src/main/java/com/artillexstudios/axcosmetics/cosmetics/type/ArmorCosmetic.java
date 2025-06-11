@@ -20,7 +20,7 @@ import java.util.List;
 
 public final class ArmorCosmetic extends Cosmetic<ArmorCosmeticConfig> {
     private static final org.bukkit.inventory.EquipmentSlot[] slots = new org.bukkit.inventory.EquipmentSlot[]{org.bukkit.inventory.EquipmentSlot.HAND, org.bukkit.inventory.EquipmentSlot.OFF_HAND, org.bukkit.inventory.EquipmentSlot.FEET, org.bukkit.inventory.EquipmentSlot.LEGS, org.bukkit.inventory.EquipmentSlot.CHEST, org.bukkit.inventory.EquipmentSlot.HEAD};
-    private final Player player = this.user().onlinePlayer();
+    private Player player;
 
     public ArmorCosmetic(User user, CosmeticData data, ArmorCosmeticConfig config) {
         super(user, data, config);
@@ -28,6 +28,7 @@ public final class ArmorCosmetic extends Cosmetic<ArmorCosmeticConfig> {
 
     @Override
     public void spawn() {
+        this.player = this.user().onlinePlayer();
         if (this.player == null) {
             throw new IllegalStateException();
         }
@@ -53,6 +54,7 @@ public final class ArmorCosmetic extends Cosmetic<ArmorCosmeticConfig> {
             sendEquipmentPacket(this.player.getEntityId(), tracker);
         }
         sendEquipmentPacket(this.player.getEntityId(), this.player);
+        this.player = null;
     }
 
     // TODO: Maybe rework

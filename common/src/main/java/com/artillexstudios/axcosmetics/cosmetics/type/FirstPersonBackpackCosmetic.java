@@ -19,7 +19,7 @@ import java.util.List;
 
 public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackpackConfig> {
     private final Location location = new Location(null, 0, 0, 0);
-    private final Player player = this.user().onlinePlayer();
+    private Player player;
     private PacketEntity entity;
     private PacketEntity firstPersonEntity;
     private PacketEntity firstPersonInteractionEntity;
@@ -30,6 +30,7 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
 
     @Override
     public void spawn() {
+        this.player = this.user().onlinePlayer();
         if (this.player == null) {
             throw new IllegalStateException();
         }
@@ -80,6 +81,7 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
         this.entity.remove();
         this.firstPersonEntity.remove();
         this.firstPersonInteractionEntity.remove();
+        this.player = null;
     }
 
     @Override
