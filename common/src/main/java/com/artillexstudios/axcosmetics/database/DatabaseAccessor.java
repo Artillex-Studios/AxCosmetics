@@ -7,7 +7,7 @@ import org.bukkit.Bukkit;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class DatabaseAccessor {
+public final class DatabaseAccessor {
     private final DatabaseHandler handler;
 
     public DatabaseAccessor(DatabaseHandler handler) {

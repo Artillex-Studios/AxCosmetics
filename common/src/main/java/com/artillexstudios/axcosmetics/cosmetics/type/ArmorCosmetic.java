@@ -5,6 +5,7 @@ import com.artillexstudios.axapi.nms.wrapper.ServerPlayerWrapper;
 import com.artillexstudios.axapi.packet.wrapper.clientbound.ClientboundSetEquipmentWrapper;
 import com.artillexstudios.axapi.utils.EquipmentSlot;
 import com.artillexstudios.axapi.utils.Pair;
+import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
@@ -13,6 +14,7 @@ import com.artillexstudios.axcosmetics.cosmetics.config.ArmorCosmeticConfig;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.checkerframework.checker.units.qual.C;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -75,11 +77,12 @@ public final class ArmorCosmetic extends Cosmetic<ArmorCosmeticConfig> {
         }
 
         ServerPlayerWrapper serverPlayerWrapper = ServerPlayerWrapper.wrap(player);
+        LogUtils.warn("Sending packet to player {}, id: {}, entityid: {}", player, player.getEntityId(), entityId);
         serverPlayerWrapper.sendPacket(new ClientboundSetEquipmentWrapper(entityId, equipment));
     }
 
     @Override
     public Collection<CosmeticSlot> validSlots() {
-        return List.of();
+        return List.of(new CosmeticSlot("helmet"), new CosmeticSlot("chest_plate"), new CosmeticSlot("leggings"), new CosmeticSlot("boots"), new CosmeticSlot("main_hand"), new CosmeticSlot("off_hand"));
     }
 }

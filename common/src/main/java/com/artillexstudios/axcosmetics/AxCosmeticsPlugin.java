@@ -17,18 +17,29 @@ import com.artillexstudios.axcosmetics.command.AxCosmeticsCommand;
 import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.config.Language;
 import com.artillexstudios.axcosmetics.cosmetics.CosmeticSlots;
+import com.artillexstudios.axcosmetics.cosmetics.CosmeticTypes;
+import com.artillexstudios.axcosmetics.cosmetics.config.ArmorCosmeticConfig;
+import com.artillexstudios.axcosmetics.cosmetics.config.CosmeticConfigLoader;
+import com.artillexstudios.axcosmetics.cosmetics.config.CosmeticConfigTypes;
 import com.artillexstudios.axcosmetics.cosmetics.config.CosmeticConfigs;
+import com.artillexstudios.axcosmetics.cosmetics.config.FirstPersonBackpackConfig;
+import com.artillexstudios.axcosmetics.cosmetics.type.ArmorCosmetic;
+import com.artillexstudios.axcosmetics.cosmetics.type.FirstPersonBackpackCosmetic;
 import com.artillexstudios.axcosmetics.database.DatabaseAccessor;
 import com.artillexstudios.axcosmetics.entitymeta.InteractionMeta;
 import com.artillexstudios.axcosmetics.listener.ArmorCosmeticPacketListener;
 import com.artillexstudios.axcosmetics.listener.PlayerListener;
 import com.artillexstudios.axcosmetics.user.UserRepository;
+import com.artillexstudios.axcosmetics.utils.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
 
 public final class AxCosmeticsPlugin extends AxPlugin {
     private static AxCosmeticsPlugin instance;
     private UserRepository userRepository;
+    private CosmeticConfigTypes cosmeticConfigTypes;
+    private CosmeticTypes cosmeticTypes;
+    private CosmeticConfigLoader configLoader;
     private CosmeticConfigs cosmeticConfigs;
     private CosmeticSlots slots;
 
@@ -46,6 +57,7 @@ public final class AxCosmeticsPlugin extends AxPlugin {
     public void load() {
         instance = this;
 
+        FileUtils.copyFromResource("cosmetics");
 //        DatabaseTypes.register(new H2DatabaseType("com.artillexstudios.axcosmetics.libs.h2"), true);
         DatabaseTypes.register(new SQLiteDatabaseType(), true);
         DatabaseTypes.register(new MySQLDatabaseType());
@@ -55,24 +67,35 @@ public final class AxCosmeticsPlugin extends AxPlugin {
         this.userRepository = new UserRepository(new DatabaseAccessor(new DatabaseHandler(this, Config.database)));
         this.slots = new CosmeticSlots();
         this.cosmeticConfigs = new CosmeticConfigs();
+        this.cosmeticConfigTypes = new CosmeticConfigTypes();
+        this.cosmeticTypes = new CosmeticTypes();
+        this.configLoader = new CosmeticConfigLoader();
         AsyncUtils.setup(Config.asyncProcessorPoolSize);
         Config.database.tablePrefix(Config.tablePrefix);
+        // TODO: DatabaseAccessor setup
 
         FeatureFlags.PACKET_ENTITY_TRACKER_THREADS.set(3); // TODO: Maybe configurable?
         EntityMetaFactory.register(EntityType.INTERACTION, InteractionMeta::new);
         AxCosmeticsCommand.load(this);
 
-        CosmeticSlot HELMET = AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("helmet"));
-        CosmeticSlot CHEST_PLATE = AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("chest_plate"));
-        CosmeticSlot LEGGINGS = AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("leggings"));
-        CosmeticSlot BOOTS = AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("boots"));
-        CosmeticSlot MAIN_HAND = AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("main_hand"));
-        CosmeticSlot OFF_HAND = AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("off_hand"));
-        CosmeticSlot BACKPACK = AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("backpack"));
+        AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("helmet"));
+        AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("chest_plate"));
+        AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("leggings"));
+        AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("boots"));
+        AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("main_hand"));
+        AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("off_hand"));
+        AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("backpack"));
+        // TODO: Maybe non-first-person backpacks?
+        AxCosmeticsAPI.instance().cosmeticConfigTypes().register("backpack", FirstPersonBackpackConfig::new);
+        AxCosmeticsAPI.instance().cosmeticConfigTypes().register("armor", ArmorCosmeticConfig::new);
+
+        AxCosmeticsAPI.instance().cosmeticTypes().register("backpack", FirstPersonBackpackCosmetic::new);
+        AxCosmeticsAPI.instance().cosmeticTypes().register("armor", ArmorCosmetic::new);
     }
 
     @Override
     public void enable() {
+        this.configLoader.loadAll();
         Bukkit.getPluginManager().registerEvents(new PlayerListener(this.userRepository), this);
 
         AxCosmeticsCommand.register();
@@ -99,5 +122,13 @@ public final class AxCosmeticsPlugin extends AxPlugin {
 
     public CosmeticConfigs cosmeticConfigs() {
         return this.cosmeticConfigs;
+    }
+
+    public CosmeticConfigTypes cosmeticConfigTypes() {
+        return this.cosmeticConfigTypes;
+    }
+
+    public CosmeticTypes cosmeticTypes() {
+        return this.cosmeticTypes;
     }
 }

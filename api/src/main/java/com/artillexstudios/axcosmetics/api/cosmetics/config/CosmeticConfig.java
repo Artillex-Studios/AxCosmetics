@@ -3,6 +3,7 @@ package com.artillexstudios.axcosmetics.api.cosmetics.config;
 import com.artillexstudios.axapi.config.adapters.ConfigurationGetter;
 import com.artillexstudios.axapi.config.adapters.TypeAdapterHolder;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
+import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
 import com.artillexstudios.axcosmetics.api.exception.MissingConfigurationOptionException;
 
@@ -19,11 +20,13 @@ public abstract class CosmeticConfig implements ConfigurationGetter {
     private final String name;
     private final Map<String, Object> config;
     private final CosmeticSlot slot;
+    private final String type;
 
     public CosmeticConfig(String name, Map<String, Object> config) throws MissingConfigurationOptionException {
         this.name = name;
         this.config = config;
         this.slot = this.getCosmeticSlot("slot");
+        this.type = this.getString("type");
     }
 
     public CosmeticSlot getCosmeticSlot(String path) {
@@ -56,6 +59,10 @@ public abstract class CosmeticConfig implements ConfigurationGetter {
 
     public String name() {
         return this.name;
+    }
+
+    public String type() {
+        return this.type;
     }
 
     @Override

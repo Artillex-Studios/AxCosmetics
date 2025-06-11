@@ -3,6 +3,7 @@ package com.artillexstudios.axcosmetics.command;
 import com.artillexstudios.axapi.AxPlugin;
 import com.artillexstudios.axapi.scheduler.Scheduler;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
+import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.cosmetics.config.ArmorCosmeticConfig;
@@ -12,6 +13,7 @@ import com.artillexstudios.axcosmetics.cosmetics.type.FirstPersonBackpackCosmeti
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.jorel.commandapi.CommandTree;
+import dev.jorel.commandapi.arguments.LiteralArgument;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -35,6 +37,34 @@ public class AxCosmeticsCommand {
 
     public static void register() {
         new CommandTree("cosmetics")
+                .then(new LiteralArgument("admin")
+                        .withPermission("axcosmetics.command.admin")
+                        .then(new LiteralArgument("equip")
+                                .then(CosmeticArgumentType.nonSavedCosmetic("cosmetic")
+                                        .executesPlayer((sender, args) -> {
+                                            User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender.getUniqueId());
+                                            Cosmetic<?> cosmetic = args.getByClass("cosmetic", Cosmetic.class);
+                                            if (cosmetic == null) {
+                                                System.out.println("Null cosmetic!");
+                                                return;
+                                            }
+
+                                            user.addCosmetic(cosmetic);
+                                            user.equipCosmetic(cosmetic);
+
+                                            Scheduler.get().runTimer(task -> {
+                                                if (!sender.isOnline()) {
+                                                    task.cancel();
+                                                    cosmetic.despawn();
+                                                    return;
+                                                }
+
+                                                cosmetic.update();
+                                            }, 1L, 1L);
+                                        })
+                                )
+                        )
+                )
                 .executesPlayer((sender, args) -> {
                     User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender.getUniqueId());
 

@@ -1,8 +1,16 @@
-backpack:
-  slot: "backpack"
-  type: "display_entity"
-  # etc.
 helmet:
   slot: "helmet"
   type: "armor"
-  # etc.
+  item-stack:
+    material: "paper"
+    custom-model-data: 1002
+backpack:
+  slot: "backpack"
+  type: "backpack"
+  height: 1.5
+  item-stack:
+    material: "paper"
+    custom-model-data: 1000
+  first-person-item-stack:
+    material: "paper"
+    custom-model-data: 11000

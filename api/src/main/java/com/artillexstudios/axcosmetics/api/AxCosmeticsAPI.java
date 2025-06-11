@@ -1,6 +1,8 @@
 package com.artillexstudios.axcosmetics.api;
 
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlots;
+import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticTypes;
+import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfigTypes;
 import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfigs;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.api.user.UserRepository;
@@ -41,6 +43,10 @@ public interface AxCosmeticsAPI {
     CosmeticSlots cosmeticSlots();
 
     CosmeticConfigs cosmeticConfigs();
+
+    CosmeticConfigTypes cosmeticConfigTypes();
+
+    CosmeticTypes cosmeticTypes();
 
     final class Holder {
         private static final AxCosmeticsAPI INSTANCE = Services.service(AxCosmeticsAPI.class).orElseThrow();

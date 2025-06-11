@@ -8,6 +8,7 @@ import com.artillexstudios.axapi.packet.wrapper.clientbound.ClientboundAddEntity
 import com.artillexstudios.axapi.packet.wrapper.clientbound.ClientboundSetEquipmentWrapper;
 import com.artillexstudios.axapi.utils.EquipmentSlot;
 import com.artillexstudios.axapi.utils.Pair;
+import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.user.User;
@@ -16,7 +17,7 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
-public class ArmorCosmeticPacketListener extends PacketListener {
+public final class ArmorCosmeticPacketListener extends PacketListener {
 
     @Override
     public void onPacketSending(PacketEvent event) {

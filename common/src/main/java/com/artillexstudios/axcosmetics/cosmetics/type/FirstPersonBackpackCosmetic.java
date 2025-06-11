@@ -86,6 +86,6 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
 
     @Override
     public Collection<CosmeticSlot> validSlots() {
-        return List.of();
+        return List.of(new CosmeticSlot("backpack"));
     }
 }

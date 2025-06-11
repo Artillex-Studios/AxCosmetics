@@ -80,7 +80,7 @@ public class UserRepository implements com.artillexstudios.axcosmetics.api.user.
                 temp = this.tempUsers.asMap().putIfAbsent(uuid, loaded);
             }
 
-            Player onlinePlayer = loaded.onlinePlayer();
+            Player onlinePlayer = loaded.player().getPlayer();
             if (onlinePlayer != null) {
                 this.idLoadedUsers.put(onlinePlayer.getEntityId(), loaded);
             }
