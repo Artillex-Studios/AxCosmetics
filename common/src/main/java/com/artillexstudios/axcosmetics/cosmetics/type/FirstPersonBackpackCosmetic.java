@@ -4,6 +4,7 @@ import com.artillexstudios.axapi.nms.NMSHandlers;
 import com.artillexstudios.axapi.packetentity.PacketEntity;
 import com.artillexstudios.axapi.packetentity.meta.entity.ArmorStandMeta;
 import com.artillexstudios.axapi.utils.EquipmentSlot;
+import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
@@ -30,7 +31,7 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
 
     @Override
     public void spawn() {
-        this.player = this.user().onlinePlayer();
+        this.player = this.user().player().getPlayer();
         if (this.player == null) {
             throw new IllegalStateException();
         }
@@ -68,6 +69,11 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
 
     @Override
     public void update() {
+        if (this.player == null) {
+            LogUtils.debug("Attempted to tick null player {}!", this.user().player().getName());
+            return;
+        }
+
         this.player.getLocation(this.location);
         float yaw = this.location.getYaw();
         this.firstPersonEntity.rotate(yaw, 0);

@@ -1,0 +1,1 @@
+INSERT INTO $table_prefixaxcosmetics_users (name, uuid) VALUES(?, ?);

@@ -1,0 +1,1 @@
+DELETE FROM $table_prefixaxcosmetics_cosmetics WHERE $table_prefixaxcosmetics_cosmetics.id = ?;

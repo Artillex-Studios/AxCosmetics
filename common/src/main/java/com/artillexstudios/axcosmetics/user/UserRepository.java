@@ -15,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-public class UserRepository implements com.artillexstudios.axcosmetics.api.user.UserRepository {
+public final class UserRepository implements com.artillexstudios.axcosmetics.api.user.UserRepository {
     private final DatabaseAccessor accessor;
     private final ConcurrentHashMap<UUID, User> loadedUsers = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, User> idLoadedUsers = new ConcurrentHashMap<>();
@@ -54,7 +54,7 @@ public class UserRepository implements com.artillexstudios.axcosmetics.api.user.
         if (user != null) {
             this.tempUsers.invalidate(uuid);
             this.loadedUsers.put(uuid, user);
-            Player onlinePlayer = user.onlinePlayer();
+            Player onlinePlayer = user.player().getPlayer();
             if (onlinePlayer != null) {
                 this.idLoadedUsers.put(onlinePlayer.getEntityId(), user);
             }

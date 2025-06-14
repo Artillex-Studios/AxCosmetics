@@ -1,0 +1,1 @@
+INSERT INTO $table_prefixaxcosmetics_cosmetics (owner_id, cosmetic_type_id, counter, color, equipped) VALUES (?,?,?,?,?);

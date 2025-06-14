@@ -16,6 +16,12 @@ public final class Config implements ConfigurationPart {
     public static DatabaseConfig database = new DatabaseConfig();
 
     @Comment("""
+            The tick frequency in milliseconds. This setting
+            controls how often cosmetics will be updated.
+            By default, this is 50ms = 1 tick.
+            """)
+    public static long tickFrequency = 50;
+    @Comment("""
             What the table prefix of the database should be.
             This is useful, if you want to connect multiple servers to the same database
             but with separate currency systems.

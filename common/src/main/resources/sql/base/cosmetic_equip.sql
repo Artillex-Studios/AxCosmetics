@@ -1,0 +1,1 @@
+UPDATE $table_prefixaxcosmetics_cosmetics SET $table_prefixaxcosmetics_cosmetics.equipped = ?, $table_prefixaxcosmetics_cosmetics.color = ? WHERE $table_prefixaxcosmetics_cosmetics.id = ?;

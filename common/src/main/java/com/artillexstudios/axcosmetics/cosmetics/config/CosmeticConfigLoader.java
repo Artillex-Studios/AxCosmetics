@@ -6,6 +6,7 @@ import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
 import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
 import com.artillexstudios.axcosmetics.api.exception.MissingConfigurationOptionException;
+import com.artillexstudios.axcosmetics.config.Config;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -43,7 +44,11 @@ public final class CosmeticConfigLoader {
                 }
 
                 try {
-                    CosmeticConfig cosmeticConfig = cosmeticSupplier.apply(type, (Map<String, Object>) configuration.getMap(key));
+                    Map<String, Object> map = (Map<String, Object>) configuration.getMap(key);
+                    CosmeticConfig cosmeticConfig = cosmeticSupplier.apply(type, map);
+                    if (Config.debug) {
+                        LogUtils.debug("Loading cosmetic config {} from data: {}!", key, map);
+                    }
                     // TODO: Database things
                     AxCosmeticsAPI.instance().cosmeticConfigs().register(cosmeticConfig);
                 } catch (MissingConfigurationOptionException exception) {

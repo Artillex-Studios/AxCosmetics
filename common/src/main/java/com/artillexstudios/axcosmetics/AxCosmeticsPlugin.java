@@ -3,7 +3,6 @@ package com.artillexstudios.axcosmetics;
 import com.artillexstudios.axapi.AxPlugin;
 import com.artillexstudios.axapi.database.DatabaseHandler;
 import com.artillexstudios.axapi.database.DatabaseTypes;
-import com.artillexstudios.axapi.database.impl.H2DatabaseType;
 import com.artillexstudios.axapi.database.impl.MySQLDatabaseType;
 import com.artillexstudios.axapi.database.impl.SQLiteDatabaseType;
 import com.artillexstudios.axapi.dependencies.DependencyManagerWrapper;
@@ -17,6 +16,7 @@ import com.artillexstudios.axcosmetics.command.AxCosmeticsCommand;
 import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.config.Language;
 import com.artillexstudios.axcosmetics.cosmetics.CosmeticSlots;
+import com.artillexstudios.axcosmetics.cosmetics.CosmeticTicker;
 import com.artillexstudios.axcosmetics.cosmetics.CosmeticTypes;
 import com.artillexstudios.axcosmetics.cosmetics.config.ArmorCosmeticConfig;
 import com.artillexstudios.axcosmetics.cosmetics.config.CosmeticConfigLoader;
@@ -41,6 +41,7 @@ public final class AxCosmeticsPlugin extends AxPlugin {
     private CosmeticTypes cosmeticTypes;
     private CosmeticConfigLoader configLoader;
     private CosmeticConfigs cosmeticConfigs;
+    private CosmeticTicker ticker;
     private CosmeticSlots slots;
 
     @Override
@@ -64,15 +65,17 @@ public final class AxCosmeticsPlugin extends AxPlugin {
 
         Config.reload();
         Language.reload();
-        this.userRepository = new UserRepository(new DatabaseAccessor(new DatabaseHandler(this, Config.database)));
+        AsyncUtils.setup(Config.asyncProcessorPoolSize);
+        DatabaseAccessor accessor = new DatabaseAccessor(new DatabaseHandler(this, Config.database));
+        this.userRepository = new UserRepository(accessor);
         this.slots = new CosmeticSlots();
         this.cosmeticConfigs = new CosmeticConfigs();
         this.cosmeticConfigTypes = new CosmeticConfigTypes();
         this.cosmeticTypes = new CosmeticTypes();
         this.configLoader = new CosmeticConfigLoader();
-        AsyncUtils.setup(Config.asyncProcessorPoolSize);
+        this.ticker = new CosmeticTicker();
         Config.database.tablePrefix(Config.tablePrefix);
-        // TODO: DatabaseAccessor setup
+        accessor.create();
 
         FeatureFlags.PACKET_ENTITY_TRACKER_THREADS.set(3); // TODO: Maybe configurable?
         EntityMetaFactory.register(EntityType.INTERACTION, InteractionMeta::new);
@@ -95,6 +98,7 @@ public final class AxCosmeticsPlugin extends AxPlugin {
 
     @Override
     public void enable() {
+        this.ticker.start();
         this.configLoader.loadAll();
         Bukkit.getPluginManager().registerEvents(new PlayerListener(this.userRepository), this);
 

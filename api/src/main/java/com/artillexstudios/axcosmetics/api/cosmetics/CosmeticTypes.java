@@ -17,6 +17,9 @@ public interface CosmeticTypes {
     @Nullable
     <T extends CosmeticConfig> TriFunction<User, CosmeticData, T, Cosmetic<T>> fetch(String identifier);
 
+    @Nullable
+    <T extends CosmeticConfig> TriFunction<User, CosmeticData, T, Cosmetic<T>> fetch(int identifier);
+
     Collection<TriFunction<User, CosmeticData, ?, Cosmetic<?>>> registered();
 
     Set<String> names();

@@ -31,9 +31,6 @@ public abstract class CosmeticConfig implements ConfigurationGetter {
 
     public CosmeticSlot getCosmeticSlot(String path) {
         String identifier = this.getString(path);
-        if (identifier == null) {
-            throw new IllegalArgumentException("No slot field!");
-        }
 
         CosmeticSlot slot = AxCosmeticsAPI.instance().cosmeticSlots().fetch(identifier);
         if (slot == null) {
