@@ -1,0 +1,1 @@
+SELECT $table_prefixaxcosmetics_cosmetic_configs.id FROM $table_prefixaxcosmetics_cosmetic_configs WHERE $table_prefixaxcosmetics_cosmetic_configs.name = ?;

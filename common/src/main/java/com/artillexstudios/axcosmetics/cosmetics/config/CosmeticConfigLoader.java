@@ -49,8 +49,8 @@ public final class CosmeticConfigLoader {
                     if (Config.debug) {
                         LogUtils.debug("Loading cosmetic config {} from data: {}!", key, map);
                     }
-                    // TODO: Database things
-                    AxCosmeticsAPI.instance().cosmeticConfigs().register(cosmeticConfig);
+
+                    futures.add(AxCosmeticsAPI.instance().cosmeticConfigs().register(cosmeticConfig));
                 } catch (MissingConfigurationOptionException exception) {
                     LogUtils.warn("Failed to load cosmetic from key {} due to a missing option!", key, exception.option());
                 }

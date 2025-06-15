@@ -1,0 +1,1 @@
+INSERT INTO $table_prefixaxcosmetics_cosmetic_configs (name) VALUES(?);

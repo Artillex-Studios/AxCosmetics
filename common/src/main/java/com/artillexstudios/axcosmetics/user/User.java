@@ -1,15 +1,19 @@
 package com.artillexstudios.axcosmetics.user;
 
+import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
+import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
 import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
 import com.artillexstudios.axcosmetics.database.DatabaseAccessor;
+import com.artillexstudios.axcosmetics.database.dto.UserDTO;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -18,13 +22,19 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
     private final ConcurrentLinkedQueue<Cosmetic<?>> cosmetics = new ConcurrentLinkedQueue<>();
     private final int id;
     private final OfflinePlayer offlinePlayer;
-    private Player onlinePlayer;
     private final DatabaseAccessor accessor;
+    private Player onlinePlayer;
 
-    public User(int id, OfflinePlayer offlinePlayer, DatabaseAccessor accessor) {
+    // TODO: UserLoadEvent
+    public User(int id, OfflinePlayer offlinePlayer, List<UserDTO> userDTOS, DatabaseAccessor accessor) {
         this.id = id;
         this.offlinePlayer = offlinePlayer;
         this.accessor = accessor;
+        for (UserDTO userDTO : userDTOS) {
+            Cosmetic<CosmeticConfig> cosmetic = AxCosmeticsAPI.instance().createCosmetic(this, userDTO.cosmeticTypeId(), new CosmeticData(userDTO.cosmeticId(), userDTO.counter(), userDTO.color()));
+            this.cosmetics.add(cosmetic);
+            this.equipCosmetic(cosmetic);
+        }
     }
 
     @Override
@@ -53,7 +63,14 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
 
     @Override
     public <T extends CosmeticConfig> void addCosmetic(Cosmetic<T> cosmetic) {
-        this.cosmetics.add(cosmetic);
+        if (cosmetic.data().id() <= 0) {
+            this.accessor.insertCosmetic(this, cosmetic).thenRun(() -> {
+                this.cosmetics.add(cosmetic);
+            });
+        } else {
+            // TODO: Update cosmetic to new owner maybe? I don't know yet
+            this.cosmetics.add(cosmetic);
+        }
     }
 
     @Override

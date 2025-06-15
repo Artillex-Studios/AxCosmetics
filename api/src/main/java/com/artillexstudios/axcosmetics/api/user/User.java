@@ -33,14 +33,28 @@ public interface User {
     @Nullable
     <T extends CosmeticConfig> Cosmetic<T> getCosmetic(CosmeticSlot slot);
 
+    /**
+     * Adds a cosmetic to a user.
+     * @param cosmetic The cosmetic to add
+     * @param <T> The CosmeticConfig type of the cosmetic
+     */
     <T extends CosmeticConfig> void addCosmetic(Cosmetic<T> cosmetic);
 
+    /**
+     * Updates the cosmetic of a user in a slot.
+     * @param slot The slot to update.
+     */
     void updateCosmetic(CosmeticSlot slot);
 
     Collection<Cosmetic<?>> getCosmetics();
 
     Collection<Cosmetic<?>> getEquippedCosmetics();
 
+    /**
+     * Equip a cosmetic for a user.
+     * The user doesn't need to have this cosmetic.
+     * @param cosmetic The cosmetic to equip.
+     */
     void equipCosmetic(Cosmetic<?> cosmetic);
 
     boolean unequipCosmetic(Cosmetic<?> cosmetic);

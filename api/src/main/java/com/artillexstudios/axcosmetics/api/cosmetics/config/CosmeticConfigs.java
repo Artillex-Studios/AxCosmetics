@@ -4,15 +4,19 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public interface CosmeticConfigs {
 
-    void register(CosmeticConfig config);
+    CompletableFuture<?> register(CosmeticConfig config);
 
     void deregister(CosmeticConfig config);
 
     @Nullable
     CosmeticConfig fetch(String identifier);
+
+    @Nullable
+    CosmeticConfig fetch(int identifier);
 
     Collection<CosmeticConfig> registered();
 

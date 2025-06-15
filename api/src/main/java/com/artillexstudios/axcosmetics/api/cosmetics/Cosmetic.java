@@ -4,6 +4,7 @@ import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
 import com.artillexstudios.axcosmetics.api.user.User;
 
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Represents a type of cosmetic.
@@ -13,8 +14,8 @@ import java.util.Collection;
  */
 public abstract class Cosmetic<T extends CosmeticConfig> {
     private final User user;
-    private final CosmeticData data;
     private final T config;
+    private CosmeticData data;
 
     public Cosmetic(User user, CosmeticData data, T config) {
         this.user = user;
@@ -48,9 +49,27 @@ public abstract class Cosmetic<T extends CosmeticConfig> {
         return this.data;
     }
 
+    public void data(CosmeticData data) {
+        this.data = data;
+    }
+
     public CosmeticSlot slot() {
         return this.config.slot();
     }
 
     public abstract Collection<CosmeticSlot> validSlots();
+
+    @Override
+    public final boolean equals(Object object) {
+        if (!(object instanceof Cosmetic<?> cosmetic)) {
+            return false;
+        }
+
+        return Objects.equals(this.data, cosmetic.data);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(this.data);
+    }
 }

@@ -3,10 +3,10 @@ package com.artillexstudios.axcosmetics.api.cosmetics.config;
 import com.artillexstudios.axapi.config.adapters.ConfigurationGetter;
 import com.artillexstudios.axapi.config.adapters.TypeAdapterHolder;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
-import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
 import com.artillexstudios.axcosmetics.api.exception.MissingConfigurationOptionException;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -32,7 +32,7 @@ public abstract class CosmeticConfig implements ConfigurationGetter {
     public CosmeticSlot getCosmeticSlot(String path) {
         String identifier = this.getString(path);
 
-        CosmeticSlot slot = AxCosmeticsAPI.instance().cosmeticSlots().fetch(identifier);
+        CosmeticSlot slot = AxCosmeticsAPI.instance().cosmeticSlots().fetch(identifier.toLowerCase(Locale.ENGLISH));
         if (slot == null) {
             throw new IllegalArgumentException("Invalid slot!");
         }

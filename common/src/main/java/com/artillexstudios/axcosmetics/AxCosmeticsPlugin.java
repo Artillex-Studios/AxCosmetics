@@ -69,7 +69,7 @@ public final class AxCosmeticsPlugin extends AxPlugin {
         DatabaseAccessor accessor = new DatabaseAccessor(new DatabaseHandler(this, Config.database));
         this.userRepository = new UserRepository(accessor);
         this.slots = new CosmeticSlots();
-        this.cosmeticConfigs = new CosmeticConfigs();
+        this.cosmeticConfigs = new CosmeticConfigs(accessor);
         this.cosmeticConfigTypes = new CosmeticConfigTypes();
         this.cosmeticTypes = new CosmeticTypes();
         this.configLoader = new CosmeticConfigLoader();
