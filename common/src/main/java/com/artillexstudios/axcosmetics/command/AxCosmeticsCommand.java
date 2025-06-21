@@ -7,6 +7,7 @@ import com.artillexstudios.axcosmetics.api.user.User;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.jorel.commandapi.CommandTree;
+import dev.jorel.commandapi.arguments.AsyncOfflinePlayerArgument;
 import dev.jorel.commandapi.arguments.LiteralArgument;
 
 public class AxCosmeticsCommand {
@@ -31,7 +32,8 @@ public class AxCosmeticsCommand {
                 .then(new LiteralArgument("admin")
                         .withPermission("axcosmetics.command.admin")
                         .then(new LiteralArgument("equip")
-                                .then(CosmeticArgumentType.nonSavedCosmetic("cosmetic")
+                                .withPermission("axcosmetics.command.admin.equip")
+                                .then(CosmeticArgumentType.cosmetic("cosmetic")
                                         .executesPlayer((sender, args) -> {
                                             User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender.getUniqueId());
                                             Cosmetic<?> cosmetic = args.getByClass("cosmetic", Cosmetic.class);
@@ -42,6 +44,15 @@ public class AxCosmeticsCommand {
 
                                             user.equipCosmetic(cosmetic);
                                         })
+                                )
+                        ).then(new LiteralArgument("give")
+                                .withPermission("axcosmetics.command.admin.equip")
+                                .then(new AsyncOfflinePlayerArgument("player")
+                                        .then(CosmeticArgumentType.cosmetic("cosmetic")
+                                                .executes((sender, args) -> {
+
+                                                })
+                                        )
                                 )
                         )
                 )

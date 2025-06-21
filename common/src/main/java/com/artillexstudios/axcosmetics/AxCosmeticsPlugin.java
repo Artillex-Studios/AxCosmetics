@@ -3,6 +3,7 @@ package com.artillexstudios.axcosmetics;
 import com.artillexstudios.axapi.AxPlugin;
 import com.artillexstudios.axapi.database.DatabaseHandler;
 import com.artillexstudios.axapi.database.DatabaseTypes;
+import com.artillexstudios.axapi.database.impl.H2DatabaseType;
 import com.artillexstudios.axapi.database.impl.MySQLDatabaseType;
 import com.artillexstudios.axapi.database.impl.SQLiteDatabaseType;
 import com.artillexstudios.axapi.dependencies.DependencyManagerWrapper;
@@ -59,8 +60,8 @@ public final class AxCosmeticsPlugin extends AxPlugin {
         instance = this;
 
         FileUtils.copyFromResource("cosmetics");
-//        DatabaseTypes.register(new H2DatabaseType("com.artillexstudios.axcosmetics.libs.h2"), true);
-        DatabaseTypes.register(new SQLiteDatabaseType(), true);
+        DatabaseTypes.register(new H2DatabaseType("com.artillexstudios.axcosmetics.libs.h2"), true);
+        DatabaseTypes.register(new SQLiteDatabaseType());
         DatabaseTypes.register(new MySQLDatabaseType());
 
         Config.reload();

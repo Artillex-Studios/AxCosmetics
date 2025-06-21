@@ -7,6 +7,7 @@ import com.artillexstudios.axapi.database.handler.TransformerHandler;
 import com.artillexstudios.axapi.utils.AsyncUtils;
 import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
+import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
 import com.artillexstudios.axcosmetics.database.dto.UserDTO;
 import com.artillexstudios.axcosmetics.user.User;
@@ -24,6 +25,9 @@ public final class DatabaseAccessor {
     private final DatabaseQuery<Integer> cosmeticConfigSelect;
     private final DatabaseQuery<Integer> cosmeticConfigInsert;
     private final DatabaseQuery<Integer> cosmeticInsert;
+    private final DatabaseQuery<Object> cosmeticDelete;
+    private final DatabaseQuery<Integer> cosmeticEditionGenerate;
+    private final DatabaseQuery<Integer> cosmeticUpdate;
 
     public DatabaseAccessor(DatabaseHandler handler) {
         this.handler = handler;
@@ -32,6 +36,9 @@ public final class DatabaseAccessor {
         this.cosmeticConfigSelect = handler.query("cosmetic_config_select");
         this.cosmeticConfigInsert = handler.query("cosmetic_config_insert");
         this.cosmeticInsert = handler.query("cosmetic_insert");
+        this.cosmeticDelete = handler.query("cosmetic_delete");
+        this.cosmeticEditionGenerate = handler.query("cosmetic_edition_generate");
+        this.cosmeticUpdate = handler.query("cosmetic_update");
     }
 
     public CompletableFuture<?> create() {
@@ -55,7 +62,8 @@ public final class DatabaseAccessor {
             }
 
             OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
-            Integer userId = this.userInsert.create().execute(player.getName(), uuid);
+            Integer userId = this.userInsert.create()
+                    .execute(player.getName(), uuid);
 
             if (userId == null) {
                 LogUtils.error("Failed to create account for user!");
@@ -69,11 +77,52 @@ public final class DatabaseAccessor {
         });
     }
 
-    public CompletableFuture<?> insertCosmetic(User user, Cosmetic<?> cosmetic) {
-        return CompletableFuture.supplyAsync(() -> {
+    public CompletableFuture<?> deleteCosmetic(Cosmetic<?> cosmetic) {
+        return CompletableFuture.runAsync(() -> {
+            if (cosmetic.data().id() == 0) {
+                throw new RuntimeException();
+            }
 
+            this.cosmeticDelete.create()
+                    .update(cosmetic.data().id());
+        }, AsyncUtils.executor()).exceptionally(throwable -> {
+            LogUtils.error("Failed to run user load query!", throwable);
             return null;
-        }, AsyncUtils.executor());
+        });
+    }
+
+    public CompletableFuture<?> updateCosmetic(Cosmetic<?> cosmetic, boolean equipped) {
+        return CompletableFuture.runAsync(() -> {
+            if (cosmetic.data().id() == 0) {
+                throw new RuntimeException();
+            }
+
+            this.cosmeticUpdate.create()
+                    .update(equipped, cosmetic.data().color(), cosmetic.data().id());
+        }, AsyncUtils.executor()).exceptionally(throwable -> {
+            LogUtils.error("Failed to run user load query!", throwable);
+            return null;
+        });
+    }
+
+    public CompletableFuture<?> insertCosmetic(User user, Cosmetic<?> cosmetic) {
+        return CompletableFuture.runAsync(() -> {
+            int edition = cosmetic.data().counter();
+            if (edition == 0) {
+                // generate new edition from the database
+                Integer query = this.cosmeticEditionGenerate.create()
+                        .query(cosmetic.config().id());
+                query = query == null ? 0 : query;
+                edition = query + 1;
+            }
+
+            Integer cosmeticId = this.cosmeticInsert.create()
+                    .execute(user.id(), cosmetic.config().id(), edition, cosmetic.data().color(), false);
+            cosmetic.data(new CosmeticData(cosmeticId, edition, cosmetic.data().color()));
+        }, AsyncUtils.executor()).exceptionally(throwable -> {
+            LogUtils.error("Failed to run user load query!", throwable);
+            return null;
+        });
     }
 
     public CompletableFuture<Integer> registerCosmeticConfig(CosmeticConfig config) {

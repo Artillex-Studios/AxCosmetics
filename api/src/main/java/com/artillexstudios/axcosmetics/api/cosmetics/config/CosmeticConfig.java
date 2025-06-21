@@ -21,6 +21,7 @@ public abstract class CosmeticConfig implements ConfigurationGetter {
     private final Map<String, Object> config;
     private final CosmeticSlot slot;
     private final String type;
+    private Integer id;
 
     public CosmeticConfig(String name, Map<String, Object> config) throws MissingConfigurationOptionException {
         this.name = name;
@@ -60,6 +61,18 @@ public abstract class CosmeticConfig implements ConfigurationGetter {
 
     public String type() {
         return this.type;
+    }
+
+    public int id() {
+        return this.id;
+    }
+
+    public void id(int id) {
+        if (this.id != null) {
+            throw new IllegalStateException();
+        }
+
+        this.id = id;
     }
 
     @Override

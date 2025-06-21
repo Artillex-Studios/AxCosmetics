@@ -26,10 +26,14 @@ public final class CosmeticConfigs implements com.artillexstudios.axcosmetics.ap
         this.identifierToCosmeticConfigMap.put(config.name(), config);
         return this.accessor.registerCosmeticConfig(config).thenAccept(id -> {
             this.identifierToCosmeticConfigMap.remove(config.name());
+            if (id == null) {
+                return;
+            }
+
+            config.id(id);
             this.register(config.name(), id, config);
         });
     }
-
 
     public <T extends CosmeticConfig> void register(String identifier, int id, T config) {
         if (this.identifierToCosmeticConfigMap.containsKey(identifier)) {

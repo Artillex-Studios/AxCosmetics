@@ -15,7 +15,7 @@ import org.bukkit.entity.Player;
 
 public class CosmeticArgumentType {
 
-    public static Argument<Cosmetic<?>> nonSavedCosmetic(String nodeName) {
+    public static Argument<Cosmetic<?>> cosmetic(String nodeName) {
         return new CustomArgument<Cosmetic<?>, String>(new StringArgument(nodeName), info -> {
             User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately((Player) info.sender());
             CosmeticConfig fetch = AxCosmeticsAPI.instance().cosmeticConfigs().fetch(info.input());

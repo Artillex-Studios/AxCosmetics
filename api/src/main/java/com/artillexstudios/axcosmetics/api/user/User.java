@@ -49,7 +49,7 @@ public interface User {
 
     Collection<Cosmetic<?>> getCosmetics();
 
-    List<? extends Cosmetic<?>> getEquippedCosmetics();
+    Collection<? extends Cosmetic<?>> getEquippedCosmetics();
 
     /**
      * Equip a cosmetic for a user.

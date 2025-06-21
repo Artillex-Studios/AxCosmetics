@@ -1,0 +1,1 @@
+SELECT MAX($table_prefixaxcosmetics_cosmetics.counter) FROM $table_prefixaxcosmetics_cosmetics WHERE $table_prefixaxcosmetics_cosmetics.cosmetic_type_id = ?;

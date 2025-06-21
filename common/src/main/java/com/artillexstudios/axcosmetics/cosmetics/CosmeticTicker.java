@@ -21,7 +21,7 @@ public final class CosmeticTicker {
 
         this.future = AsyncUtils.scheduleAtFixedRate(() -> {
             for (User onlineUser : AxCosmeticsAPI.instance().userRepository().onlineUsers()) {
-                Collection<Cosmetic<?>> equippedCosmetics = onlineUser.getEquippedCosmetics();
+                Collection<? extends Cosmetic<?>> equippedCosmetics = onlineUser.getEquippedCosmetics();
                 for (Cosmetic<?> cosmetic : equippedCosmetics) {
                     try {
                         cosmetic.update();

@@ -11,6 +11,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -33,7 +34,9 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
         for (UserDTO userDTO : userDTOS) {
             Cosmetic<CosmeticConfig> cosmetic = AxCosmeticsAPI.instance().createCosmetic(this, userDTO.cosmeticTypeId(), new CosmeticData(userDTO.cosmeticId(), userDTO.counter(), userDTO.color()));
             this.cosmetics.add(cosmetic);
-            this.equipCosmetic(cosmetic);
+            if (userDTO.equipped()) {
+                this.equipCosmetic(cosmetic);
+            }
         }
     }
 
@@ -102,19 +105,22 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
 
     @Override
     public void equipCosmetic(Cosmetic<?> cosmetic) {
-        List<Cosmetic<?>> cosmeticList = this.equipped.get(cosmetic.slot());
-        if (cosmeticList == null || cosmeticList.isEmpty()) {
-            return;
-        }
-
-        Cosmetic<?> equipped = cosmeticList.getFirst();
-
-        if (equipped != null) {
+        boolean contains = this.cosmetics.contains(cosmetic);
+        List<Cosmetic<?>> cosmeticList = this.equipped.computeIfAbsent(cosmetic.slot(), o -> new ArrayList<>());
+        if (!cosmeticList.isEmpty()) {
+            Cosmetic<?> equipped = cosmeticList.getFirst();
             equipped.despawn();
+
+            if (contains && this.cosmetics.contains(equipped)) {
+                cosmeticList.remove(equipped);
+                this.accessor.updateCosmetic(equipped, false);
+            }
         }
 
         cosmeticList.addFirst(cosmetic);
-        this.equipped.put(cosmetic.slot(), cosmeticList);
+        if (contains) {
+            this.accessor.updateCosmetic(cosmetic, true);
+        }
         cosmetic.spawn();
     }
 
@@ -133,12 +139,14 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
         Cosmetic<?> equipped = cosmeticList.removeFirst();
         if (equipped != null) {
             equipped.despawn();
+            if (this.cosmetics.contains(equipped)) {
+                this.accessor.updateCosmetic(equipped, false);
+            }
             if (cosmeticList.isEmpty()) {
                 return true;
             }
 
-            Cosmetic<?> cosmetic = cosmeticList.getFirst();
-            cosmetic.spawn();
+            this.equipCosmetic(cosmeticList.getFirst());
             return true;
         }
 
