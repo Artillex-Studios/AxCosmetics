@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface User {
 
@@ -48,7 +49,7 @@ public interface User {
 
     Collection<Cosmetic<?>> getCosmetics();
 
-    Collection<Cosmetic<?>> getEquippedCosmetics();
+    List<? extends Cosmetic<?>> getEquippedCosmetics();
 
     /**
      * Equip a cosmetic for a user.

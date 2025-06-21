@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public final class User implements com.artillexstudios.axcosmetics.api.user.User {
-    private final ConcurrentHashMap<CosmeticSlot, Cosmetic<?>> equipped = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<CosmeticSlot, List<Cosmetic<?>>> equipped = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<Cosmetic<?>> cosmetics = new ConcurrentLinkedQueue<>();
     private final int id;
     private final OfflinePlayer offlinePlayer;
@@ -75,7 +75,12 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
 
     @Override
     public void updateCosmetic(CosmeticSlot slot) {
-        Cosmetic<?> cosmetic = this.equipped.get(slot);
+        List<Cosmetic<?>> cosmeticList = this.equipped.get(slot);
+        if (cosmeticList == null || cosmeticList.isEmpty()) {
+            return;
+        }
+
+        Cosmetic<?> cosmetic = cosmeticList.getFirst();
         if (cosmetic == null) {
             return;
         }
@@ -89,18 +94,27 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
     }
 
     @Override
-    public Collection<Cosmetic<?>> getEquippedCosmetics() {
-        return Collections.unmodifiableCollection(this.equipped.values());
+    public List<? extends Cosmetic<?>> getEquippedCosmetics() {
+        return this.equipped.values().stream()
+                .map(List::getFirst)
+                .toList();
     }
 
     @Override
     public void equipCosmetic(Cosmetic<?> cosmetic) {
-        Cosmetic<?> equipped = this.equipped.get(cosmetic.slot());
+        List<Cosmetic<?>> cosmeticList = this.equipped.get(cosmetic.slot());
+        if (cosmeticList == null || cosmeticList.isEmpty()) {
+            return;
+        }
+
+        Cosmetic<?> equipped = cosmeticList.getFirst();
+
         if (equipped != null) {
             equipped.despawn();
         }
 
-        this.equipped.put(cosmetic.slot(), cosmetic);
+        cosmeticList.addFirst(cosmetic);
+        this.equipped.put(cosmetic.slot(), cosmeticList);
         cosmetic.spawn();
     }
 
@@ -111,9 +125,20 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
 
     @Override
     public boolean unequipCosmetic(CosmeticSlot slot) {
-        Cosmetic<?> equipped = this.equipped.remove(slot);
+        List<Cosmetic<?>> cosmeticList = this.equipped.get(slot);
+        if (cosmeticList == null || cosmeticList.isEmpty()) {
+            return false;
+        }
+
+        Cosmetic<?> equipped = cosmeticList.removeFirst();
         if (equipped != null) {
             equipped.despawn();
+            if (cosmeticList.isEmpty()) {
+                return true;
+            }
+
+            Cosmetic<?> cosmetic = cosmeticList.getFirst();
+            cosmetic.spawn();
             return true;
         }
 
