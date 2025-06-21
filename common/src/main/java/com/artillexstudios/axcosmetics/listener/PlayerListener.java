@@ -10,6 +10,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class PlayerListener implements Listener {
     private final UserRepository repository;
 
@@ -34,7 +37,10 @@ public final class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerQuitEvent(PlayerQuitEvent event) {
         User user = this.repository.disconnect(event.getPlayer().getUniqueId());
-        for (Cosmetic<?> equippedCosmetic : user.getEquippedCosmetics()) {
+        user.getEquippedCosmetics().clear();
+        // Clear ticking cosmetics, then despawn them.
+        List<Cosmetic<?>> equipped = new ArrayList<>(user.getEquippedCosmetics());
+        for (Cosmetic<?> equippedCosmetic : equipped) {
             equippedCosmetic.despawn();
         }
         ((com.artillexstudios.axcosmetics.user.User) user).onlinePlayer(null);

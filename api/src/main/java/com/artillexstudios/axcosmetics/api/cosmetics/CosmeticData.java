@@ -1,6 +1,6 @@
 package com.artillexstudios.axcosmetics.api.cosmetics;
 
-public record CosmeticData(int id, int counter, int color) {
+public record CosmeticData(int id, int counter, int color, long timeStamp) {
 
     @Override
     public boolean equals(Object object) {

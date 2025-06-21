@@ -1,0 +1,32 @@
+title: "Your Cosmetics"
+rows: 6
+
+equipped:
+
+items:
+  - material: "gray_stained_glass_pane"
+    name: "<gray>"
+    slots:
+      - 0-9
+      - 17-18
+      - 26-27
+      - 35-35
+      - 44-53
+  - material: "barrier"
+    name: "<#FF0000>Close"
+    actions:
+      - "[close]"
+    slots:
+      - 49
+  - material: "barrier"
+    name: "<#FF0000>Unequip all"
+    actions:
+      - "[unequip] all"
+    slots:
+      - 47
+  - material: "barrier"
+    name: "<#FF0000>Unequip helmet"
+    actions:
+      - "[unequip] helmet"
+    slots:
+      - 51

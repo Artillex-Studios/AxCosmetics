@@ -32,6 +32,7 @@ subprojects {
     dependencies {
         implementation("com.artillexstudios.axapi:axapi:1.4.710:all")
         implementation("dev.jorel:commandapi-bukkit-shade:10.0.0")
+        implementation("dev.triumphteam:triumph-gui:3.1.12")
         compileOnly("com.github.ben-manes.caffeine:caffeine:3.2.0")
         compileOnly("org.spigotmc:spigot-api:1.21-R0.1-SNAPSHOT")
         compileOnly("org.apache.commons:commons-lang3:3.14.0")
@@ -53,6 +54,7 @@ tasks {
         relocate("com.github.benmanes", "com.artillexstudios.axcosmetics.libs.axapi.libs.caffeine")
         relocate("com.artillexstudios.axapi", "com.artillexstudios.axcosmetics.libs.axapi")
         relocate("dev.jorel.commandapi", "com.artillexstudios.axcosmetics.libs.commandapi")
+        relocate("dev.triumphteam.gui", "com.artillexstudios.axcosmetics.libs.triumphgui")
         relocate("org.h2", "com.artillexstudios.axcosmetics.libs.h2")
     }
 }

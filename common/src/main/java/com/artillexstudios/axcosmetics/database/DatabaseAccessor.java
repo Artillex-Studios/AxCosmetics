@@ -78,15 +78,15 @@ public final class DatabaseAccessor {
     }
 
     public CompletableFuture<?> deleteCosmetic(Cosmetic<?> cosmetic) {
-        return CompletableFuture.runAsync(() -> {
+        return CompletableFuture.supplyAsync(() -> {
             if (cosmetic.data().id() == 0) {
-                throw new RuntimeException();
+                return null;
             }
 
-            this.cosmeticDelete.create()
+            return this.cosmeticDelete.create()
                     .update(cosmetic.data().id());
         }, AsyncUtils.executor()).exceptionally(throwable -> {
-            LogUtils.error("Failed to run user load query!", throwable);
+            LogUtils.error("Failed to run cosmetic delete query!", throwable);
             return null;
         });
     }
@@ -100,7 +100,7 @@ public final class DatabaseAccessor {
             this.cosmeticUpdate.create()
                     .update(equipped, cosmetic.data().color(), cosmetic.data().id());
         }, AsyncUtils.executor()).exceptionally(throwable -> {
-            LogUtils.error("Failed to run user load query!", throwable);
+            LogUtils.error("Failed to run cosmetic update query!", throwable);
             return null;
         });
     }
@@ -117,10 +117,10 @@ public final class DatabaseAccessor {
             }
 
             Integer cosmeticId = this.cosmeticInsert.create()
-                    .execute(user.id(), cosmetic.config().id(), edition, cosmetic.data().color(), false);
-            cosmetic.data(new CosmeticData(cosmeticId, edition, cosmetic.data().color()));
+                    .execute(user.id(), cosmetic.config().id(), edition, cosmetic.data().color(), cosmetic.data().timeStamp(), false);
+            cosmetic.data(new CosmeticData(cosmeticId, edition, cosmetic.data().color(), cosmetic.data().timeStamp()));
         }, AsyncUtils.executor()).exceptionally(throwable -> {
-            LogUtils.error("Failed to run user load query!", throwable);
+            LogUtils.error("Failed to run cosmetic insert query!", throwable);
             return null;
         });
     }
@@ -135,7 +135,7 @@ public final class DatabaseAccessor {
             }
 
             cosmeticConfigId = this.cosmeticConfigInsert.create()
-                    .query(config.name());
+                    .execute(config.name());
             if (cosmeticConfigId == null) {
                 LogUtils.error("Failed to insert cosmetic config {}!", config.name());
                 return null;

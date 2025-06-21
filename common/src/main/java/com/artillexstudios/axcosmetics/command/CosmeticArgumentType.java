@@ -26,11 +26,12 @@ public class CosmeticArgumentType {
 
             TriFunction<User, CosmeticData, CosmeticConfig, Cosmetic<CosmeticConfig>> fetch1 = AxCosmeticsAPI.instance().cosmeticTypes().fetch(fetch.type());
             if (fetch1 == null) {
+                // TODO: Fail message
                 LogUtils.error("No other fetched with id {}", fetch.type());
                 return null;
             }
 
-            return fetch1.apply(user, new CosmeticData(0, 0, 0), fetch);
+            return fetch1.apply(user, new CosmeticData(0, 0, 0, System.currentTimeMillis()), fetch);
         }).replaceSuggestions(ArgumentSuggestions.strings(info ->
                 AxCosmeticsAPI.instance().cosmeticConfigs().names().toArray(new String[0])
         ));

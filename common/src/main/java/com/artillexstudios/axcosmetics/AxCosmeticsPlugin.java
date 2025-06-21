@@ -47,7 +47,8 @@ public final class AxCosmeticsPlugin extends AxPlugin {
 
     @Override
     public void dependencies(DependencyManagerWrapper manager) {
-        // TODO: Load dependencies
+        manager.dependency("com{}h2database:h2:2.3.232");
+        manager.relocate("org{}h2", "com.artillexstudios.axcosmetics.libs.h2");
     }
 
     @Override
@@ -67,6 +68,7 @@ public final class AxCosmeticsPlugin extends AxPlugin {
         Config.reload();
         Language.reload();
         AsyncUtils.setup(Config.asyncProcessorPoolSize);
+        Config.database.tablePrefix(Config.tablePrefix);
         DatabaseAccessor accessor = new DatabaseAccessor(new DatabaseHandler(this, Config.database));
         this.userRepository = new UserRepository(accessor);
         this.slots = new CosmeticSlots();
@@ -75,7 +77,6 @@ public final class AxCosmeticsPlugin extends AxPlugin {
         this.cosmeticTypes = new CosmeticTypes();
         this.configLoader = new CosmeticConfigLoader();
         this.ticker = new CosmeticTicker();
-        Config.database.tablePrefix(Config.tablePrefix);
         accessor.create();
 
         FeatureFlags.PACKET_ENTITY_TRACKER_THREADS.set(3); // TODO: Maybe configurable?
