@@ -4,6 +4,7 @@ import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.gui.GuiBase;
 import com.artillexstudios.axcosmetics.gui.actions.Action;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.entity.Player;
 
 public final class ActionPlayerCommand extends Action<String> {
@@ -25,7 +26,6 @@ public final class ActionPlayerCommand extends Action<String> {
             return;
         }
 
-        // TODO: proper placeholders
-        player.performCommand(value);
+        player.performCommand(PlaceholderAPI.setPlaceholders(player, value));
     }
 }

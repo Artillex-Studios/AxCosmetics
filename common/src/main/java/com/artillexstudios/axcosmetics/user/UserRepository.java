@@ -6,6 +6,7 @@ import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.database.DatabaseAccessor;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;
@@ -15,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+// TODO: Fix new users not working correctly
 public final class UserRepository implements com.artillexstudios.axcosmetics.api.user.UserRepository {
     private final DatabaseAccessor accessor;
     private final ConcurrentHashMap<UUID, User> loadedUsers = new ConcurrentHashMap<>();
@@ -31,6 +33,14 @@ public final class UserRepository implements com.artillexstudios.axcosmetics.api
     @Override
     public User getUserIfLoadedImmediately(UUID uuid) {
         User user = this.loadedUsers.get(uuid);
+
+        Player onlinePlayer = Bukkit.getPlayer(uuid);
+        if (onlinePlayer != null && user != null) {
+            ((com.artillexstudios.axcosmetics.user.User) user).player(onlinePlayer);
+            ((com.artillexstudios.axcosmetics.user.User) user).onlinePlayer(onlinePlayer);
+            this.idLoadedUsers.put(onlinePlayer.getEntityId(), user);
+        }
+
         if (user != null) {
             return user;
         }
@@ -54,8 +64,9 @@ public final class UserRepository implements com.artillexstudios.axcosmetics.api
         if (user != null) {
             this.tempUsers.invalidate(uuid);
             this.loadedUsers.put(uuid, user);
-            Player onlinePlayer = user.player().getPlayer();
+            Player onlinePlayer = Bukkit.getPlayer(uuid);
             if (onlinePlayer != null) {
+                ((com.artillexstudios.axcosmetics.user.User) user).player(onlinePlayer);
                 this.idLoadedUsers.put(onlinePlayer.getEntityId(), user);
             }
             return CompletableFuture.completedFuture(user);
@@ -78,11 +89,6 @@ public final class UserRepository implements com.artillexstudios.axcosmetics.api
                 temp = this.loadedUsers.putIfAbsent(uuid, loaded);
             } else {
                 temp = this.tempUsers.asMap().putIfAbsent(uuid, loaded);
-            }
-
-            Player onlinePlayer = loaded.player().getPlayer();
-            if (onlinePlayer != null) {
-                this.idLoadedUsers.put(onlinePlayer.getEntityId(), loaded);
             }
 
             return temp == null ? loaded : temp;

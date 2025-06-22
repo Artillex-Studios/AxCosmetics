@@ -10,18 +10,19 @@ import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
 import com.artillexstudios.axcosmetics.api.user.User;
+import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.cosmetics.config.ArmorCosmeticConfig;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.checkerframework.checker.units.qual.C;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public final class ArmorCosmetic extends Cosmetic<ArmorCosmeticConfig> {
-    private static final org.bukkit.inventory.EquipmentSlot[] slots = new org.bukkit.inventory.EquipmentSlot[]{org.bukkit.inventory.EquipmentSlot.HAND, org.bukkit.inventory.EquipmentSlot.OFF_HAND, org.bukkit.inventory.EquipmentSlot.FEET, org.bukkit.inventory.EquipmentSlot.LEGS, org.bukkit.inventory.EquipmentSlot.CHEST, org.bukkit.inventory.EquipmentSlot.HEAD};
+    private int resendTicks = -1;
+    private boolean equipped = false;
     private Player player;
 
     public ArmorCosmetic(User user, CosmeticData data, ArmorCosmeticConfig config) {
@@ -30,55 +31,78 @@ public final class ArmorCosmetic extends Cosmetic<ArmorCosmeticConfig> {
 
     @Override
     public void spawn() {
+        if (Config.debug) {
+            LogUtils.debug("Armor equip!");
+        }
         this.player = this.user().onlinePlayer();
         if (this.player == null) {
             throw new IllegalStateException();
         }
 
         for (Player tracker : this.player.getTrackedBy()) {
-            sendEquipmentPacket(this.player.getEntityId(), tracker);
+            sendEquipmentPacket(this.player, tracker, this.config().equipmentSlot());
         }
-        sendEquipmentPacket(this.player.getEntityId(), this.player);
+        sendEquipmentPacket(this.player, this.player, this.config().equipmentSlot());
+        this.equipped = true;
     }
 
     @Override
     public void update() {
-        // do nothing
+        if (!this.equipped) {
+            return;
+        }
+
+        if (this.resendTicks > 0) {
+            this.resendTicks--;
+        } else if (this.resendTicks == 0) {
+            sendEquipmentPacket(this.player, this.player, this.config().equipmentSlot());
+            this.resendTicks = -1;
+        }
     }
 
     @Override
     public void despawn() {
+        if (Config.debug) {
+            LogUtils.debug("Armor unequip!");
+        }
+        if (!this.equipped) {
+            return;
+        }
+
+        this.equipped = false;
         if (this.player == null) {
             throw new IllegalStateException();
         }
 
         for (Player tracker : this.player.getTrackedBy()) {
-            sendEquipmentPacket(this.player.getEntityId(), tracker);
+            resendEquipmentPacket(this.player, tracker, this.config().equipmentSlot());
         }
-        sendEquipmentPacket(this.player.getEntityId(), this.player);
+        resendEquipmentPacket(this.player, this.player, this.config().equipmentSlot());
         this.player = null;
     }
 
-    // TODO: Maybe rework
-    public static void sendEquipmentPacket(int entityId, Player player) {
+    public static void sendEquipmentPacket(Player sender, Player receiver, EquipmentSlot slot) {
+        sendEquipmentPacket(sender.getEntityId(), receiver, slot, new ItemStack(Material.AIR));
+    }
+
+    public static void resendEquipmentPacket(Player sender, Player receiver, EquipmentSlot slot) {
+        ItemStack item = sender.getEquipment().getItem(org.bukkit.inventory.EquipmentSlot.values()[slot.ordinal()]);
+        sendEquipmentPacket(sender.getEntityId(), receiver, slot, item);
+    }
+
+    public static void sendEquipmentPacket(int entityId, Player receiver, EquipmentSlot slot, ItemStack stack) {
         List<Pair<EquipmentSlot, WrappedItemStack>> equipment = new ArrayList<>();
-        for (org.bukkit.inventory.EquipmentSlot value : slots) {
-            ItemStack item = player.getInventory().getItem(value);
-            if (item == null || item.getType().isAir()) {
-                continue;
-            }
+        equipment.add(Pair.of(slot, WrappedItemStack.wrap(stack)));
 
-
-            equipment.add(Pair.of(EquipmentSlot.values()[value.ordinal()], WrappedItemStack.wrap(item)));
+        ServerPlayerWrapper serverPlayerWrapper = ServerPlayerWrapper.wrap(receiver);
+        if (Config.debug) {
+            LogUtils.debug("Sending packet to player {}, id: {}, entityid: {}", receiver, receiver.getEntityId(), entityId);
         }
-
-        if (equipment.isEmpty()) {
-            equipment.add(Pair.of(EquipmentSlot.HELMET, WrappedItemStack.wrap(new ItemStack(Material.AIR))));
-        }
-
-        ServerPlayerWrapper serverPlayerWrapper = ServerPlayerWrapper.wrap(player);
-        LogUtils.warn("Sending packet to player {}, id: {}, entityid: {}", player, player.getEntityId(), entityId);
         serverPlayerWrapper.sendPacket(new ClientboundSetEquipmentWrapper(entityId, equipment));
+    }
+
+    public void markResend() {
+        this.resendTicks = Config.armorResendFrequency;
     }
 
     @Override

@@ -28,6 +28,11 @@ public final class Language implements ConfigurationPart {
         public String fail = "<#FF0000>There were some issues while reloading file(s): <white><files></white>! Please check out the console for more information! <br>Reload done in: <white><time></white>ms!";
     }
 
+    public static String equip = "<#00FF00>You have successfully equipped <cosmetic>!";
+    public static String unequip = "<#FF0000>You have successfully unequipped <cosmetic>!";
+    public static String give = "<#00FF00>You have successfully given <cosmetic> <edition> to <player>!";
+    public static String receive = "<#00FF00>You were given <cosmetic> <edition>!";
+
     @Comment("Do not touch!")
     public static int configVersion = 1;
     @Ignored

@@ -9,6 +9,7 @@ import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
 import com.artillexstudios.axcosmetics.api.user.User;
+import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.cosmetics.config.FirstPersonBackpackConfig;
 import com.artillexstudios.axcosmetics.entitymeta.InteractionMeta;
 import org.bukkit.Location;
@@ -24,6 +25,7 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
     private PacketEntity entity;
     private PacketEntity firstPersonEntity;
     private PacketEntity firstPersonInteractionEntity;
+    private boolean equipped = false;
 
     public FirstPersonBackpackCosmetic(User user, CosmeticData data, FirstPersonBackpackConfig config) {
         super(user, data, config);
@@ -31,7 +33,10 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
 
     @Override
     public void spawn() {
-        this.player = this.user().player().getPlayer();
+        if (Config.debug) {
+            LogUtils.debug("Backpack equip!");
+        }
+        this.player = this.user().onlinePlayer();
         if (this.player == null) {
             throw new IllegalStateException();
         }
@@ -40,13 +45,14 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
         this.player.getLocation(this.location);
 
         this.entity = NMSHandlers.getNmsHandler().createEntity(EntityType.ARMOR_STAND, this.location);
-        this.entity.setItem(EquipmentSlot.HELMET, this.config().itemStack());
+        this.entity.setItem(EquipmentSlot.HELMET, this.config().itemStack(this.data()));
         ArmorStandMeta meta = (ArmorStandMeta) this.entity.meta();
         meta.invisible(true);
         meta.marker(true);
         this.entity.hide(this.player);
         this.entity.spawn();
         this.entity.ride(this.player.getEntityId());
+        this.entity.rotateHead(this.location.getYaw());
 
         this.firstPersonInteractionEntity = NMSHandlers.getNmsHandler().createEntity(EntityType.INTERACTION, this.location);
         InteractionMeta interactionMeta = (InteractionMeta) this.firstPersonInteractionEntity.meta();
@@ -62,13 +68,18 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
         otherMeta.marker(true);
         this.firstPersonEntity.setVisibleByDefault(false);
         this.firstPersonEntity.show(this.player);
-        this.firstPersonEntity.spawn();
         this.firstPersonEntity.setItem(EquipmentSlot.HELMET, this.config().firstPersonItemStack());
+        this.firstPersonEntity.spawn();
         this.firstPersonEntity.ride(this.firstPersonInteractionEntity.id());
+        this.equipped = true;
     }
 
     @Override
     public void update() {
+        if (!this.equipped) {
+            return;
+        }
+
         if (this.player == null) {
             LogUtils.debug("Attempted to tick null player {}!", this.user().player().getName());
             return;
@@ -79,11 +90,26 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
         this.firstPersonEntity.rotate(yaw, 0);
         this.firstPersonEntity.rotateHead(yaw);
 
+        // TODO: Do we need to rotate the head?
         this.entity.rotate(yaw, 0);
+        if (Config.forceRidePackets) {
+            this.firstPersonEntity.ride(this.firstPersonInteractionEntity.id());
+            this.firstPersonInteractionEntity.ride(this.player.getEntityId());
+            this.entity.ride(this.player.getEntityId());
+        }
     }
 
     @Override
     public void despawn() {
+        if (Config.debug) {
+            LogUtils.debug("Backpack unequip!");
+        }
+
+        if (!this.equipped) {
+            return;
+        }
+
+        this.equipped = false;
         this.entity.remove();
         this.firstPersonEntity.remove();
         this.firstPersonInteractionEntity.remove();

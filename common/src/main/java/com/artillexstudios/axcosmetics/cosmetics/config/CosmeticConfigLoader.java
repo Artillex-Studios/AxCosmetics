@@ -1,6 +1,7 @@
 package com.artillexstudios.axcosmetics.cosmetics.config;
 
 import com.artillexstudios.axapi.config.YamlConfiguration;
+import com.artillexstudios.axapi.libs.snakeyaml.DumperOptions;
 import com.artillexstudios.axapi.utils.YamlUtils;
 import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
@@ -27,7 +28,12 @@ public final class CosmeticConfigLoader {
                 continue;
             }
 
-            YamlConfiguration<?> configuration = YamlConfiguration.of(file.toPath()).build();
+            YamlConfiguration<?> configuration = YamlConfiguration.of(file.toPath())
+                    .withDumperOptions(options -> {
+                        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+                        options.setSplitLines(false);
+                    })
+                    .build();
             configuration.load();
 
             for (String key : configuration.keys()) {

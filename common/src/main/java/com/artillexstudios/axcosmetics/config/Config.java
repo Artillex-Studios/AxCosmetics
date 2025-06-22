@@ -16,6 +16,32 @@ public final class Config implements ConfigurationPart {
     public static DatabaseConfig database = new DatabaseConfig();
 
     @Comment("""
+            This setting controls how often the plugin will resend
+            armor cosmetics, if they have been marked as needing a resend.
+            This is the amount of ticks, by the tick frequency that need to pass.
+            Setting this to a larger number will make the cosmetic update less often, thus
+            it can disappear from the player. Setting it to a larger number will also
+            decrease the amount of packets sent.
+            """)
+    public static int armorResendFrequency = 2;
+    @Comment("""
+            If the plugin should listen to ride packets.
+            This means, that if a different plugin is also adding
+            passengers to the players, we will also add our entity into the list,
+            so the other plugin doesn't interfere with our passengers.
+            This has a minimal impact on the performance of the plugin
+            
+            -----CURRENTLY DOES NOT WORK-----
+            """)
+    public static boolean listenToRidePackets = true;
+    @Comment("""
+            If the plugin should force the riding packets.
+            This means, that the backpacks will never bug off the back of the player
+            but it also means that more packets will be sent, causing larger network usage.
+            Only enable this if your backpacks are falling off all the time.
+            """)
+    public static boolean forceRidePackets = false;
+    @Comment("""
             The tick frequency in milliseconds. This setting
             controls how often cosmetics will be updated.
             By default, this is 50ms = 1 tick.

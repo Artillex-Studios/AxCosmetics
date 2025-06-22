@@ -77,4 +77,10 @@ public interface User {
     boolean unequipCosmetic(CosmeticSlot slot);
 
     <T extends CosmeticConfig> boolean isEquipped(Cosmetic<T> cosmetic);
+
+    void hideSlot(CosmeticSlot slot);
+
+    void showSlot(CosmeticSlot slot);
+
+    boolean isSlotHidden(CosmeticSlot slot);
 }

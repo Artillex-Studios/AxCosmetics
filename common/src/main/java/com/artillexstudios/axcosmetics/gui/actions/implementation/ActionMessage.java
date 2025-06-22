@@ -1,9 +1,12 @@
 package com.artillexstudios.axcosmetics.gui.actions.implementation;
 
+import com.artillexstudios.axapi.nms.wrapper.ServerPlayerWrapper;
+import com.artillexstudios.axapi.utils.StringUtils;
 import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.gui.GuiBase;
 import com.artillexstudios.axcosmetics.gui.actions.Action;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.entity.Player;
 
 public final class ActionMessage extends Action<String> {
@@ -25,7 +28,7 @@ public final class ActionMessage extends Action<String> {
             return;
         }
 
-        // TODO: parse message
-        player.sendMessage(value);
+        ServerPlayerWrapper wrapper = ServerPlayerWrapper.wrap(player);
+        wrapper.message(StringUtils.format(PlaceholderAPI.setPlaceholders(player, value)));
     }
 }

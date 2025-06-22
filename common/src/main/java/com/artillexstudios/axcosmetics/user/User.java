@@ -1,5 +1,6 @@
 package com.artillexstudios.axcosmetics.user;
 
+import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
@@ -11,7 +12,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -19,14 +19,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class User implements com.artillexstudios.axcosmetics.api.user.User {
+    // The cosmetics, which are equipped by the player.
+    // These can be added by the API, thus not necessarily
     private final ConcurrentHashMap<CosmeticSlot, ConcurrentLinkedDeque<Cosmetic<?>>> equipped = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<CosmeticSlot, Cosmetic<?>> priorityEquipped = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<Cosmetic<?>> cosmetics = new ConcurrentLinkedQueue<>();
+    private final ConcurrentHashMap<CosmeticSlot, AtomicInteger> slotCounters = new ConcurrentHashMap<>();
     private final int id;
-    private final OfflinePlayer offlinePlayer;
     private final DatabaseAccessor accessor;
+    private OfflinePlayer offlinePlayer;
     private Player onlinePlayer;
 
     // TODO: UserLoadEvent
@@ -52,6 +56,10 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
     @Override
     public OfflinePlayer player() {
         return this.offlinePlayer;
+    }
+
+    public void player(OfflinePlayer offlinePlayer) {
+        this.offlinePlayer = offlinePlayer;
     }
 
     public void onlinePlayer(Player player) {
@@ -171,5 +179,39 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
     @Override
     public <T extends CosmeticConfig> boolean isEquipped(Cosmetic<T> cosmetic) {
         return this.priorityEquipped.containsValue(cosmetic);
+    }
+
+    @Override
+    public void hideSlot(CosmeticSlot slot) {
+        this.slotCounters.computeIfAbsent(slot, val -> new AtomicInteger(0))
+                .incrementAndGet();
+        Cosmetic<?> remove = this.priorityEquipped.remove(slot);
+        if (remove != null) {
+            remove.despawn();
+        }
+    }
+
+    @Override
+    public void showSlot(CosmeticSlot slot) {
+        AtomicInteger atomicInteger = this.slotCounters.get(slot);
+        if (atomicInteger == null || atomicInteger.get() == 0) {
+            LogUtils.warn("This slot is already shown!");
+            return;
+        }
+
+        if (atomicInteger.decrementAndGet() == 0) {
+            ConcurrentLinkedDeque<Cosmetic<?>> cosmetics = this.equipped.get(slot);
+            if (cosmetics != null && !cosmetics.isEmpty()) {
+                Cosmetic<?> first = cosmetics.getFirst();
+                this.priorityEquipped.put(slot, first);
+                first.spawn();
+            }
+        }
+    }
+
+    @Override
+    public boolean isSlotHidden(CosmeticSlot slot) {
+        AtomicInteger atomicInteger = this.slotCounters.get(slot);
+        return atomicInteger != null && atomicInteger.get() > 0;
     }
 }

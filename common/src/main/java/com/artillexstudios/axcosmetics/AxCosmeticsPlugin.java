@@ -28,7 +28,10 @@ import com.artillexstudios.axcosmetics.cosmetics.type.ArmorCosmetic;
 import com.artillexstudios.axcosmetics.cosmetics.type.FirstPersonBackpackCosmetic;
 import com.artillexstudios.axcosmetics.database.DatabaseAccessor;
 import com.artillexstudios.axcosmetics.entitymeta.InteractionMeta;
-import com.artillexstudios.axcosmetics.listener.ArmorCosmeticPacketListener;
+import com.artillexstudios.axcosmetics.integrations.AxVanishIntegration;
+import com.artillexstudios.axcosmetics.listener.ArmorCosmeticListener;
+import com.artillexstudios.axcosmetics.listener.CosmeticPacketListener;
+import com.artillexstudios.axcosmetics.listener.BackpackCosmeticListener;
 import com.artillexstudios.axcosmetics.listener.PlayerListener;
 import com.artillexstudios.axcosmetics.user.UserRepository;
 import com.artillexstudios.axcosmetics.utils.FileUtils;
@@ -103,10 +106,15 @@ public final class AxCosmeticsPlugin extends AxPlugin {
         this.ticker.start();
         this.configLoader.loadAll();
         Bukkit.getPluginManager().registerEvents(new PlayerListener(this.userRepository), this);
+        Bukkit.getPluginManager().registerEvents(new ArmorCosmeticListener(), this);
+        Bukkit.getPluginManager().registerEvents(new BackpackCosmeticListener(), this);
+        if (Bukkit.getPluginManager().getPlugin("AxVanish") != null) {
+            Bukkit.getPluginManager().registerEvents(new AxVanishIntegration(), this);
+        }
 
         AxCosmeticsCommand.register();
         AxCosmeticsCommand.enable();
-        PacketEvents.INSTANCE.addListener(new ArmorCosmeticPacketListener());
+        PacketEvents.INSTANCE.addListener(new CosmeticPacketListener());
     }
 
     @Override
