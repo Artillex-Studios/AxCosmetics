@@ -7,10 +7,13 @@ import com.artillexstudios.axapi.database.impl.H2DatabaseType;
 import com.artillexstudios.axapi.database.impl.MySQLDatabaseType;
 import com.artillexstudios.axapi.database.impl.SQLiteDatabaseType;
 import com.artillexstudios.axapi.dependencies.DependencyManagerWrapper;
+import com.artillexstudios.axapi.libs.hikari.HikariConfig;
+import com.artillexstudios.axapi.libs.hikari.HikariDataSource;
 import com.artillexstudios.axapi.packet.PacketEvents;
 import com.artillexstudios.axapi.packetentity.meta.EntityMetaFactory;
 import com.artillexstudios.axapi.utils.AsyncUtils;
 import com.artillexstudios.axapi.utils.featureflags.FeatureFlags;
+import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
 import com.artillexstudios.axcosmetics.command.AxCosmeticsCommand;
@@ -30,14 +33,17 @@ import com.artillexstudios.axcosmetics.database.DatabaseAccessor;
 import com.artillexstudios.axcosmetics.entitymeta.InteractionMeta;
 import com.artillexstudios.axcosmetics.integrations.AxVanishIntegration;
 import com.artillexstudios.axcosmetics.listener.ArmorCosmeticListener;
-import com.artillexstudios.axcosmetics.listener.CosmeticPacketListener;
 import com.artillexstudios.axcosmetics.listener.BackpackCosmeticListener;
+import com.artillexstudios.axcosmetics.listener.CosmeticPacketListener;
 import com.artillexstudios.axcosmetics.listener.PlayerListener;
 import com.artillexstudios.axcosmetics.listener.RidePacketListener;
 import com.artillexstudios.axcosmetics.user.UserRepository;
 import com.artillexstudios.axcosmetics.utils.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
+import org.jetbrains.annotations.NotNull;
+
+import java.sql.SQLException;
 
 public final class AxCosmeticsPlugin extends AxPlugin {
     private static AxCosmeticsPlugin instance;
@@ -46,6 +52,7 @@ public final class AxCosmeticsPlugin extends AxPlugin {
     private CosmeticTypes cosmeticTypes;
     private CosmeticConfigLoader configLoader;
     private CosmeticConfigs cosmeticConfigs;
+    private DatabaseHandler handler;
     private CosmeticTicker ticker;
     private CosmeticSlots slots;
 
@@ -72,8 +79,17 @@ public final class AxCosmeticsPlugin extends AxPlugin {
         Config.reload();
         Language.reload();
         AsyncUtils.setup(Config.asyncProcessorPoolSize);
-        Config.database.tablePrefix(Config.tablePrefix);
-        DatabaseAccessor accessor = new DatabaseAccessor(new DatabaseHandler(this, Config.database));
+
+        HikariDataSource dataSource = this.getHikariDataSource();
+        this.handler = new DatabaseHandler(this, Config.database, () -> {
+            try {
+                return dataSource.getConnection();
+            } catch (SQLException exception) {
+                LogUtils.error("Failed to acquire connection from datasource!", exception);
+                throw new RuntimeException(exception);
+            }
+        });
+        DatabaseAccessor accessor = new DatabaseAccessor(this.handler);
         this.userRepository = new UserRepository(accessor);
         this.slots = new CosmeticSlots();
         this.cosmeticConfigs = new CosmeticConfigs(accessor);
@@ -124,6 +140,21 @@ public final class AxCosmeticsPlugin extends AxPlugin {
     @Override
     public void disable() {
         AxCosmeticsCommand.disable();
+        AsyncUtils.stop();
+        this.handler.close();
+    }
+
+    @NotNull
+    private HikariDataSource getHikariDataSource() {
+        Config.database.tablePrefix(Config.tablePrefix);
+        HikariConfig config = Config.database.type.config(Config.database);
+        config.setPoolName("axapi-" + this.getName() + "-database-pool");
+        if (Config.database.url != null && !(Config.database.type instanceof MySQLDatabaseType)) {
+            config.addDataSourceProperty("url", Config.database.url);
+        }
+        config.addDataSourceProperty("allowMultiQueries", "true");
+
+        return new HikariDataSource(config);
     }
 
     public static AxCosmeticsPlugin instance() {
@@ -148,5 +179,13 @@ public final class AxCosmeticsPlugin extends AxPlugin {
 
     public CosmeticTypes cosmeticTypes() {
         return this.cosmeticTypes;
+    }
+
+    public CosmeticConfigLoader configLoader() {
+        return this.configLoader;
+    }
+
+    public DatabaseHandler handler() {
+        return this.handler;
     }
 }

@@ -45,7 +45,7 @@ public final class DatabaseAccessor {
     public CompletableFuture<?> create() {
         return CompletableFuture.runAsync(() -> {
             this.handler.query("create")
-                    .createAsync()
+                    .create()
                     .update();
         }, AsyncUtils.executor()).exceptionally(throwable -> {
             LogUtils.error("Failed to run create query!", throwable);

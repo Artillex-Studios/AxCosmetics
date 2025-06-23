@@ -28,41 +28,48 @@ public final class CosmeticConfigLoader {
                 continue;
             }
 
-            YamlConfiguration<?> configuration = YamlConfiguration.of(file.toPath())
-                    .withDumperOptions(options -> {
-                        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-                        options.setSplitLines(false);
-                    })
-                    .build();
-            configuration.load();
-
-            for (String key : configuration.keys()) {
-                String type = configuration.getString(key + ".type");
-                if (type == null || type.isBlank()) {
-                    LogUtils.warn("Failed to construct cosmetic from key {} due to missing type!", key);
-                    continue;
-                }
-
-                BiFunction<String, Map<String, Object>, CosmeticConfig> cosmeticSupplier = AxCosmeticsAPI.instance().cosmeticConfigTypes().fetch(type);
-                if (cosmeticSupplier == null) {
-                    LogUtils.warn("Failed to construct cosmetic from key {} due to invalid cosmetic type! Found: {}, valid values: {}", key, type, AxCosmeticsAPI.instance().cosmeticConfigTypes().names());
-                    continue;
-                }
-
-                try {
-                    Map<String, Object> map = (Map<String, Object>) configuration.getMap(key);
-                    CosmeticConfig cosmeticConfig = cosmeticSupplier.apply(type, map);
-                    if (Config.debug) {
-                        LogUtils.debug("Loading cosmetic config {} from data: {}!", key, map);
-                    }
-
-                    futures.add(AxCosmeticsAPI.instance().cosmeticConfigs().register(cosmeticConfig));
-                } catch (MissingConfigurationOptionException exception) {
-                    LogUtils.warn("Failed to load cosmetic from key {} due to a missing option!", key, exception.option());
-                }
-            }
+            futures.addAll(this.loadFile(file));
         }
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+    }
+
+    public List<CompletableFuture<?>> loadFile(File file) {
+        YamlConfiguration<?> configuration = YamlConfiguration.of(file.toPath())
+                .withDumperOptions(options -> {
+                    options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+                    options.setSplitLines(false);
+                })
+                .build();
+        configuration.load();
+        List<CompletableFuture<?>> futures = new ArrayList<>();
+
+        for (String key : configuration.keys()) {
+            String type = configuration.getString(key + ".type");
+            if (type == null || type.isBlank()) {
+                LogUtils.warn("Failed to construct cosmetic from key {} due to missing type!", key);
+                continue;
+            }
+
+            BiFunction<String, Map<String, Object>, CosmeticConfig> cosmeticSupplier = AxCosmeticsAPI.instance().cosmeticConfigTypes().fetch(type);
+            if (cosmeticSupplier == null) {
+                LogUtils.warn("Failed to construct cosmetic from key {} due to invalid cosmetic type! Found: {}, valid values: {}", key, type, AxCosmeticsAPI.instance().cosmeticConfigTypes().names());
+                continue;
+            }
+
+            try {
+                Map<String, Object> map = (Map<String, Object>) configuration.getMap(key);
+                CosmeticConfig cosmeticConfig = cosmeticSupplier.apply(type, map);
+                if (Config.debug) {
+                    LogUtils.debug("Loading cosmetic config {} from data: {}!", key, map);
+                }
+
+                futures.add(AxCosmeticsAPI.instance().cosmeticConfigs().register(cosmeticConfig));
+            } catch (MissingConfigurationOptionException exception) {
+                LogUtils.warn("Failed to load cosmetic from key {} due to a missing option!", key, exception.option());
+            }
+        }
+
+        return futures;
     }
 }
