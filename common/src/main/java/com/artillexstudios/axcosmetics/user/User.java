@@ -214,4 +214,18 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
         AtomicInteger atomicInteger = this.slotCounters.get(slot);
         return atomicInteger != null && atomicInteger.get() > 0;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "equipped=" + equipped +
+                ", priorityEquipped=" + priorityEquipped +
+                ", cosmetics=" + cosmetics +
+                ", slotCounters=" + slotCounters +
+                ", id=" + id +
+                ", accessor=" + accessor +
+                ", offlinePlayer=" + offlinePlayer +
+                ", onlinePlayer=" + onlinePlayer +
+                '}';
+    }
 }

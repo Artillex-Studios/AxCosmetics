@@ -30,8 +30,6 @@ public final class Config implements ConfigurationPart {
             passengers to the players, we will also add our entity into the list,
             so the other plugin doesn't interfere with our passengers.
             This has a minimal impact on the performance of the plugin
-            
-            -----CURRENTLY DOES NOT WORK-----
             """)
     public static boolean listenToRidePackets = true;
     @Comment("""

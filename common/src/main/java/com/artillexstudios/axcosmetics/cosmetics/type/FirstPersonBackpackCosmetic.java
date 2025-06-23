@@ -116,6 +116,22 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
         this.player = null;
     }
 
+    public Integer entityId() {
+        if (!this.equipped) {
+            return null;
+        }
+
+        return this.entity.id();
+    }
+
+    public Integer interactionEntityId() {
+        if (!this.equipped) {
+            return null;
+        }
+
+        return this.firstPersonInteractionEntity.id();
+    }
+
     @Override
     public Collection<CosmeticSlot> validSlots() {
         return List.of(new CosmeticSlot("backpack"));

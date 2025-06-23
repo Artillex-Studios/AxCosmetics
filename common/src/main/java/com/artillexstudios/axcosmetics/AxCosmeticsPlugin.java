@@ -33,6 +33,7 @@ import com.artillexstudios.axcosmetics.listener.ArmorCosmeticListener;
 import com.artillexstudios.axcosmetics.listener.CosmeticPacketListener;
 import com.artillexstudios.axcosmetics.listener.BackpackCosmeticListener;
 import com.artillexstudios.axcosmetics.listener.PlayerListener;
+import com.artillexstudios.axcosmetics.listener.RidePacketListener;
 import com.artillexstudios.axcosmetics.user.UserRepository;
 import com.artillexstudios.axcosmetics.utils.FileUtils;
 import org.bukkit.Bukkit;
@@ -115,6 +116,9 @@ public final class AxCosmeticsPlugin extends AxPlugin {
         AxCosmeticsCommand.register();
         AxCosmeticsCommand.enable();
         PacketEvents.INSTANCE.addListener(new CosmeticPacketListener());
+        if (Config.listenToRidePackets) {
+            PacketEvents.INSTANCE.addListener(new RidePacketListener());
+        }
     }
 
     @Override
