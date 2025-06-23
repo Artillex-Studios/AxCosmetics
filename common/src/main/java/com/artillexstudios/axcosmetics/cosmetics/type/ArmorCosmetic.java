@@ -3,12 +3,14 @@ package com.artillexstudios.axcosmetics.cosmetics.type;
 import com.artillexstudios.axapi.items.WrappedItemStack;
 import com.artillexstudios.axapi.nms.wrapper.ServerPlayerWrapper;
 import com.artillexstudios.axapi.packet.wrapper.clientbound.ClientboundSetEquipmentWrapper;
+import com.artillexstudios.axapi.scheduler.Scheduler;
 import com.artillexstudios.axapi.utils.EquipmentSlot;
 import com.artillexstudios.axapi.utils.Pair;
 import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
+import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlots;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.cosmetics.config.ArmorCosmeticConfig;
@@ -23,6 +25,7 @@ import java.util.List;
 
 public final class ArmorCosmetic extends Cosmetic<ArmorCosmeticConfig> {
     private int resendTicks = -1;
+    private boolean updateInventory = false;
     private boolean equipped = false;
     private Player player;
 
@@ -62,6 +65,13 @@ public final class ArmorCosmetic extends Cosmetic<ArmorCosmeticConfig> {
         } else if (this.resendTicks == 0) {
             sendEquipmentPacket(this.player, this.player, this.config().equipmentSlot());
             this.resendTicks = -1;
+        }
+
+        if (this.updateInventory) {
+            this.updateInventory = false;
+            Scheduler.get().run(this.player, task -> {
+                this.player.updateInventory();
+            }, () -> {});
         }
     }
 
@@ -111,8 +121,12 @@ public final class ArmorCosmetic extends Cosmetic<ArmorCosmeticConfig> {
         this.resendTicks = Config.armorResendFrequency;
     }
 
+    public void updateInventory() {
+        this.updateInventory = true;
+    }
+
     @Override
     public Collection<CosmeticSlot> validSlots() {
-        return List.of(new CosmeticSlot("helmet"), new CosmeticSlot("chest_plate"), new CosmeticSlot("leggings"), new CosmeticSlot("boots"), new CosmeticSlot("main_hand"), new CosmeticSlot("off_hand"));
+        return List.of(CosmeticSlots.HELMET, CosmeticSlots.CHEST_PLATE, CosmeticSlots.LEGGINGS, CosmeticSlots.BOOTS, CosmeticSlots.MAIN_HAND, CosmeticSlots.OFF_HAND);
     }
 }

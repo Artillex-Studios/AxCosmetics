@@ -79,7 +79,7 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
                     .findFirst()
                     .orElse(null);
         } else {
-            return (Cosmetic<T>) this.equipped.get(slot).peekFirst();
+            return (Cosmetic<T>) this.priorityEquipped.get(slot);
         }
     }
 

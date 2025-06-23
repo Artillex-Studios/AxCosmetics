@@ -6,12 +6,15 @@ import com.artillexstudios.axapi.packet.PacketEvent;
 import com.artillexstudios.axapi.packet.PacketListener;
 import com.artillexstudios.axapi.packet.ServerboundPacketTypes;
 import com.artillexstudios.axapi.packet.wrapper.clientbound.ClientboundAddEntityWrapper;
+import com.artillexstudios.axapi.packet.wrapper.clientbound.ClientboundContainerSetSlotWrapper;
 import com.artillexstudios.axapi.packet.wrapper.clientbound.ClientboundSetEquipmentWrapper;
 import com.artillexstudios.axapi.utils.EquipmentSlot;
 import com.artillexstudios.axapi.utils.Pair;
 import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
+import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
+import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlots;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.cosmetics.type.ArmorCosmetic;
@@ -45,7 +48,9 @@ public final class CosmeticPacketListener extends PacketListener {
             ClientboundSetEquipmentWrapper wrapper = new ClientboundSetEquipmentWrapper(event);
             User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(wrapper.entityId());
             if (user == null) {
-                LogUtils.warn("Null player!");
+                if (Config.debug) {
+                    LogUtils.debug("Equipment null player!");
+                }
                 return;
             }
 
@@ -75,9 +80,49 @@ public final class CosmeticPacketListener extends PacketListener {
         } else if (event.type() == ClientboundPacketTypes.CONTAINER_SET_SLOT) {
             User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(event.player().getUniqueId());
             if (user == null) {
+                if (Config.debug) {
+                    LogUtils.debug("Container set slot packet, user null!");
+                }
                 return;
             }
 
+            ClientboundContainerSetSlotWrapper wrapper = new ClientboundContainerSetSlotWrapper(event);
+            int containerId = wrapper.containerId();
+            if (containerId != 0) {
+                if (Config.debug) {
+                    LogUtils.debug("Container set slot packet, not player inventory");
+                }
+                return;
+            }
+
+            CosmeticSlot slot = getCosmeticSlot(wrapper.slot());
+            if (slot == null) {
+                if (Config.debug) {
+                    LogUtils.debug("Not a cosmetic slot!");
+                }
+                return;
+            }
+
+            Cosmetic<?> cosmetic = user.getCosmetic(slot);
+
+            if (cosmetic instanceof ArmorCosmetic armor) {
+                if (Config.debug) {
+                    LogUtils.debug("Updating item!");
+                }
+                wrapper.stack(armor.config().itemStack(armor.data()));
+            }
+        } else if (event.type() == ClientboundPacketTypes.CONTAINER_CONTENT) {
+            User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(event.player().getUniqueId());
+            if (user == null) {
+                if (Config.debug) {
+                    LogUtils.debug("Container set content, user null!");
+                }
+                return;
+            }
+
+            if (Config.debug) {
+                LogUtils.debug("SET CONTENT!");
+            }
             sendUserArmorUpdate(user, event.player());
         }
     }
@@ -95,6 +140,10 @@ public final class CosmeticPacketListener extends PacketListener {
     }
 
     public static void sendUserArmorUpdate(User user, Player eventPlayer) {
+        sendUserArmorUpdate(user, eventPlayer, false);
+    }
+
+    public static void sendUserArmorUpdate(User user, Player eventPlayer, boolean inventory) {
         Player player = user.onlinePlayer();
         if (player == null) {
             return;
@@ -114,10 +163,24 @@ public final class CosmeticPacketListener extends PacketListener {
                 ArmorCosmetic.sendEquipmentPacket(player, eventPlayer, armorCosmetic.config().equipmentSlot());
             } else {
                 // Mark as needs to be resent, this limits packet spam
-                armorCosmetic.markResend();
+                if (inventory) {
+                    armorCosmetic.updateInventory();
+                } else {
+                    armorCosmetic.markResend();
+                }
             }
 
             return;
         }
+    }
+
+    public static CosmeticSlot getCosmeticSlot(int slot) {
+        return switch (slot) {
+            case 5 -> CosmeticSlots.HELMET;
+            case 6 -> CosmeticSlots.CHEST_PLATE;
+            case 7 -> CosmeticSlots.LEGGINGS;
+            case 8 -> CosmeticSlots.BOOTS;
+            default -> null;
+        };
     }
 }

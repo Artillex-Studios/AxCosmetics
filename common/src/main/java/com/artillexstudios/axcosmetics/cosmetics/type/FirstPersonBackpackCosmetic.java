@@ -8,6 +8,7 @@ import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
+import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlots;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.cosmetics.config.FirstPersonBackpackConfig;
@@ -137,6 +138,6 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
 
     @Override
     public Collection<CosmeticSlot> validSlots() {
-        return List.of(new CosmeticSlot("backpack"));
+        return List.of(CosmeticSlots.BACKPACK);
     }
 }
