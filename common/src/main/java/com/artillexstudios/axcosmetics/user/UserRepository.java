@@ -1,8 +1,10 @@
 package com.artillexstudios.axcosmetics.user;
 
+import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.LoadContext;
 import com.artillexstudios.axcosmetics.api.exception.UserAlreadyLoadedException;
 import com.artillexstudios.axcosmetics.api.user.User;
+import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.database.DatabaseAccessor;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -16,7 +18,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-// TODO: Fix new users not working correctly
 public final class UserRepository implements com.artillexstudios.axcosmetics.api.user.UserRepository {
     private final DatabaseAccessor accessor;
     private final ConcurrentHashMap<UUID, User> loadedUsers = new ConcurrentHashMap<>();
@@ -36,12 +37,23 @@ public final class UserRepository implements com.artillexstudios.axcosmetics.api
 
         Player onlinePlayer = Bukkit.getPlayer(uuid);
         if (onlinePlayer != null && user != null) {
-            ((com.artillexstudios.axcosmetics.user.User) user).player(onlinePlayer);
-            ((com.artillexstudios.axcosmetics.user.User) user).onlinePlayer(onlinePlayer);
-            this.idLoadedUsers.put(onlinePlayer.getEntityId(), user);
+            if (Config.debug) {
+                LogUtils.debug("getUserIfLoadedImmediately - Player object is not null");
+            }
+            // Update the user's player and onlineplayer instances, if the entityId is new
+            if (this.idLoadedUsers.put(onlinePlayer.getEntityId(), user) == null) {
+                if (Config.debug) {
+                    LogUtils.debug("Added entityId of player");
+                }
+                ((com.artillexstudios.axcosmetics.user.User) user).player(onlinePlayer);
+                ((com.artillexstudios.axcosmetics.user.User) user).onlinePlayer(onlinePlayer);
+            }
         }
 
         if (user != null) {
+            if (Config.debug) {
+                LogUtils.debug("Returning loaded user!");
+            }
             return user;
         }
 
@@ -89,6 +101,10 @@ public final class UserRepository implements com.artillexstudios.axcosmetics.api
                 temp = this.loadedUsers.putIfAbsent(uuid, loaded);
             } else {
                 temp = this.tempUsers.asMap().putIfAbsent(uuid, loaded);
+            }
+
+            if (Config.debug) {
+                LogUtils.debug("Temp: {}, loaded: {}", temp, loaded);
             }
 
             return temp == null ? loaded : temp;

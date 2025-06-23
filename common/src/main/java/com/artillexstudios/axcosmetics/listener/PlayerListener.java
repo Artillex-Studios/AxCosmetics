@@ -1,8 +1,6 @@
 package com.artillexstudios.axcosmetics.listener;
 
-import com.artillexstudios.axapi.nms.wrapper.ServerPlayerWrapper;
 import com.artillexstudios.axapi.utils.logging.LogUtils;
-import com.artillexstudios.axcosmetics.AxCosmeticsPlugin;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.exception.UserAlreadyLoadedException;
@@ -23,20 +21,20 @@ public final class PlayerListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerLoginEvent(AsyncPlayerPreLoginEvent event) {
+    public void onAsyncPlayerPreLoginEvent(AsyncPlayerPreLoginEvent event) {
         try {
             this.repository.loadUser(event.getUniqueId()).join();
         } catch (UserAlreadyLoadedException exception) {
             LogUtils.error("Failed to load already loaded user {}!", event.getName(), exception);
         } catch (Throwable throwable) {
-            LogUtils.error("A different error occurred!");
+            LogUtils.error("A different error occurred while loading user {}!", event.getName(), throwable);
         }
     }
 
     @EventHandler
     public void onPlayerJoinEvent(PlayerJoinEvent event) {
         User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(event.getPlayer());
-        ((com.artillexstudios.axcosmetics.user.User) user).onlinePlayer(event.getPlayer());
+
         for (Cosmetic<?> cosmetic : user.getEquippedCosmetics()) {
             if (Config.debug) {
                 LogUtils.debug("Spawning equipped cosmetic {}", cosmetic.data());

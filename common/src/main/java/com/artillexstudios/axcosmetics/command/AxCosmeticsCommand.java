@@ -2,8 +2,11 @@ package com.artillexstudios.axcosmetics.command;
 
 import com.artillexstudios.axapi.AxPlugin;
 import com.artillexstudios.axapi.utils.MessageUtils;
+import com.artillexstudios.axapi.utils.Pair;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
+import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
+import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.config.Language;
@@ -14,6 +17,7 @@ import dev.jorel.commandapi.CommandTree;
 import dev.jorel.commandapi.arguments.AsyncOfflinePlayerArgument;
 import dev.jorel.commandapi.arguments.LiteralArgument;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import org.apache.commons.lang3.function.TriFunction;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
@@ -53,7 +57,12 @@ public class AxCosmeticsCommand {
                                 .then(CosmeticArgumentType.cosmetic("cosmetic")
                                         .executesPlayer((sender, args) -> {
                                             User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender.getUniqueId());
-                                            Cosmetic<?> cosmetic = args.getByClass("cosmetic", Cosmetic.class);
+                                            Pair<TriFunction<User, CosmeticData, CosmeticConfig, Cosmetic<CosmeticConfig>>, CosmeticConfig> cosmeticBuilder = args.getUnchecked("cosmetic");
+                                            if (cosmeticBuilder == null) {
+                                                return;
+                                            }
+
+                                            Cosmetic<?> cosmetic = cosmeticBuilder.first().apply(user, new CosmeticData(0, 0, 0, System.currentTimeMillis()), cosmeticBuilder.second());
                                             if (cosmetic == null) {
                                                 System.out.println("Null cosmetic!");
                                                 return;
@@ -72,13 +81,15 @@ public class AxCosmeticsCommand {
                                                         return;
                                                     }
 
-                                                    Cosmetic<?> cosmetic = args.getByClass("cosmetic", Cosmetic.class);
-                                                    if (cosmetic == null) {
+                                                    Pair<TriFunction<User, CosmeticData, CosmeticConfig, Cosmetic<CosmeticConfig>>, CosmeticConfig> cosmeticBuilder = args.getUnchecked("cosmetic");
+                                                    if (cosmeticBuilder == null) {
                                                         return;
                                                     }
 
                                                     playerFuture.thenAccept(player -> {
                                                         AxCosmeticsAPI.instance().getUser(player).thenAccept(user -> {
+                                                            Cosmetic<?> cosmetic = cosmeticBuilder.first().apply(user, new CosmeticData(0, 0, 0, System.currentTimeMillis()), cosmeticBuilder.second());
+
                                                             user.addCosmetic(cosmetic).thenRun(() -> {
                                                                 MessageUtils.sendMessage(sender, Language.prefix, Language.give,
                                                                         Placeholder.unparsed("edition", String.valueOf(cosmetic.data().counter())),

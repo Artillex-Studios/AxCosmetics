@@ -12,6 +12,7 @@ import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.cosmetics.config.ArmorCosmeticConfig;
+import com.artillexstudios.axcosmetics.utils.ThreadUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -27,10 +28,14 @@ public final class ArmorCosmetic extends Cosmetic<ArmorCosmeticConfig> {
 
     public ArmorCosmetic(User user, CosmeticData data, ArmorCosmeticConfig config) {
         super(user, data, config);
+        if (Config.debug) {
+            LogUtils.debug("Created armor cosmetic for user {} with data: {}", user, data);
+        }
     }
 
     @Override
     public void spawn() {
+        ThreadUtils.ensureMain("ArmorCosmetic spawn");
         if (Config.debug) {
             LogUtils.debug("Armor equip!");
         }
@@ -68,6 +73,7 @@ public final class ArmorCosmetic extends Cosmetic<ArmorCosmeticConfig> {
         if (!this.equipped) {
             return;
         }
+        ThreadUtils.ensureMain("ArmorCosmetic despawn");
 
         this.equipped = false;
         if (this.player == null) {

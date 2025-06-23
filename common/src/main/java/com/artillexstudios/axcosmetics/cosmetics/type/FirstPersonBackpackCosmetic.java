@@ -29,6 +29,9 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
 
     public FirstPersonBackpackCosmetic(User user, CosmeticData data, FirstPersonBackpackConfig config) {
         super(user, data, config);
+        if (Config.debug) {
+            LogUtils.debug("Created first person backpack cosmetic for user {} with data: {}", user, data);
+        }
     }
 
     @Override

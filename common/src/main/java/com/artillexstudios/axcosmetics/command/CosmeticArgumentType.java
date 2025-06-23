@@ -1,5 +1,6 @@
 package com.artillexstudios.axcosmetics.command;
 
+import com.artillexstudios.axapi.utils.Pair;
 import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
@@ -11,13 +12,11 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import org.apache.commons.lang3.function.TriFunction;
-import org.bukkit.entity.Player;
 
 public class CosmeticArgumentType {
 
-    public static Argument<Cosmetic<?>> cosmetic(String nodeName) {
-        return new CustomArgument<Cosmetic<?>, String>(new StringArgument(nodeName), info -> {
-            User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately((Player) info.sender());
+    public static Argument<Pair<TriFunction<User, CosmeticData, CosmeticConfig, Cosmetic<CosmeticConfig>>, CosmeticConfig>> cosmetic(String nodeName) {
+        return new CustomArgument<>(new StringArgument(nodeName), info -> {
             CosmeticConfig fetch = AxCosmeticsAPI.instance().cosmeticConfigs().fetch(info.input());
             if (fetch == null) {
                 LogUtils.error("No fetched with id {}", info.input());
@@ -31,7 +30,7 @@ public class CosmeticArgumentType {
                 return null;
             }
 
-            return fetch1.apply(user, new CosmeticData(0, 0, 0, System.currentTimeMillis()), fetch);
+            return Pair.of(fetch1, fetch);
         }).replaceSuggestions(ArgumentSuggestions.strings(info ->
                 AxCosmeticsAPI.instance().cosmeticConfigs().names().toArray(new String[0])
         ));

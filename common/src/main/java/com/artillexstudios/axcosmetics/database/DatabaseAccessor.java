@@ -9,6 +9,7 @@ import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
+import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.database.dto.UserDTO;
 import com.artillexstudios.axcosmetics.user.User;
 import org.bukkit.Bukkit;
@@ -58,12 +59,20 @@ public final class DatabaseAccessor {
                     .query(uuid);
 
             if (userDTOS != null && !userDTOS.isEmpty()) {
+                if (Config.debug) {
+                    LogUtils.debug("Loading already existing user with uuid {}, id: {}", uuid, userDTOS.getFirst().userId());
+                }
+
                 return new User(userDTOS.getFirst().userId(), Bukkit.getOfflinePlayer(uuid), userDTOS, this);
             }
 
             OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
             Integer userId = this.userInsert.create()
                     .execute(player.getName(), uuid);
+
+            if (Config.debug) {
+                LogUtils.debug("Creating new user with uuid {}, id: {}", uuid, userId);
+            }
 
             if (userId == null) {
                 LogUtils.error("Failed to create account for user!");
@@ -97,6 +106,10 @@ public final class DatabaseAccessor {
                 throw new RuntimeException();
             }
 
+            if (Config.debug) {
+                LogUtils.debug("Updating cosmetic: {}, equipped: {}", cosmetic, equipped);
+            }
+
             this.cosmeticUpdate.create()
                     .update(equipped, cosmetic.data().color(), cosmetic.data().id());
         }, AsyncUtils.executor()).exceptionally(throwable -> {
@@ -118,6 +131,11 @@ public final class DatabaseAccessor {
 
             Integer cosmeticId = this.cosmeticInsert.create()
                     .execute(user.id(), cosmetic.config().id(), edition, cosmetic.data().color(), cosmetic.data().timeStamp(), false);
+
+            if (Config.debug) {
+                LogUtils.debug("Inserting cosmetic: {}, id: {}, edition: {}, user: {}", cosmetic, cosmetic, edition, user);
+            }
+
             cosmetic.data(new CosmeticData(cosmeticId, edition, cosmetic.data().color(), cosmetic.data().timeStamp()));
         }, AsyncUtils.executor()).exceptionally(throwable -> {
             LogUtils.error("Failed to run cosmetic insert query!", throwable);
