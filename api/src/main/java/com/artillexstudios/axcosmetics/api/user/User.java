@@ -83,4 +83,15 @@ public interface User {
     void showSlot(CosmeticSlot slot);
 
     boolean isSlotHidden(CosmeticSlot slot);
+
+    /**
+     * Checks if the user has a cosmetic with this config.
+     * @param config The CosmeticConfig to check.
+     * @return Whether the player has a cosmetic with this config.
+     */
+    boolean has(CosmeticConfig config);
+
+    List<Cosmetic<?>> matching(CosmeticConfig config);
+
+    void updatePermissionCosmetics();
 }

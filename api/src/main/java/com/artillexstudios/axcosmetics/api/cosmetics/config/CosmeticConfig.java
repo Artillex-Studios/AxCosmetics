@@ -18,6 +18,7 @@ import java.util.Objects;
 public abstract class CosmeticConfig implements ConfigurationGetter {
     private final TypeAdapterHolder holder = new TypeAdapterHolder();
     private final String name;
+    private final String permission;
     private final Map<String, Object> config;
     private final CosmeticSlot slot;
     private final String type;
@@ -28,6 +29,7 @@ public abstract class CosmeticConfig implements ConfigurationGetter {
         this.config = config;
         this.slot = this.getCosmeticSlot("slot");
         this.type = this.getString("type");
+        this.permission = this.getNullable("permission", String.class);
     }
 
     public CosmeticSlot getCosmeticSlot(String path) {
@@ -43,12 +45,16 @@ public abstract class CosmeticConfig implements ConfigurationGetter {
 
     @Override
     public <T> T get(String path, Class<T> clazz) throws MissingConfigurationOptionException {
-        T value = clazz.cast(this.holder.deserialize(this.config.get(path), clazz));
+        T value = this.getNullable("path", clazz);
         if (value == null) {
             throw new MissingConfigurationOptionException(path);
         }
 
         return value;
+    }
+
+    public <T> T getNullable(String path, Class<T> clazz) {
+        return clazz.cast(this.holder.deserialize(this.config.get(path), clazz));
     }
 
     public CosmeticSlot slot() {
@@ -73,6 +79,10 @@ public abstract class CosmeticConfig implements ConfigurationGetter {
         }
 
         this.id = id;
+    }
+
+    public String permission() {
+        return this.permission;
     }
 
     @Override

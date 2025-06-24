@@ -8,10 +8,12 @@ import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
 import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
 import com.artillexstudios.axcosmetics.database.DatabaseAccessor;
 import com.artillexstudios.axcosmetics.database.dto.UserDTO;
+import org.apache.commons.lang3.function.TriFunction;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -148,7 +150,32 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
 
     @Override
     public boolean unequipCosmetic(Cosmetic<?> cosmetic) {
-        return this.unequipCosmetic(cosmetic.slot());
+        ConcurrentLinkedDeque<Cosmetic<?>> cosmeticList = this.equipped.get(cosmetic.slot());
+        if (cosmeticList == null || cosmeticList.isEmpty()) {
+            return false;
+        }
+
+        Cosmetic<?> equipped = cosmeticList.getFirst();
+        if (equipped != null && !equipped.equals(cosmetic)) {
+            return false;
+        }
+
+        cosmeticList.removeFirst();
+        this.priorityEquipped.remove(cosmetic.slot());
+        if (equipped != null) {
+            equipped.despawn();
+            if (this.cosmetics.contains(equipped)) {
+                this.accessor.updateCosmetic(equipped, false);
+            }
+            if (cosmeticList.isEmpty()) {
+                return true;
+            }
+
+            this.equipCosmetic(cosmeticList.getFirst());
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -213,6 +240,64 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
     public boolean isSlotHidden(CosmeticSlot slot) {
         AtomicInteger atomicInteger = this.slotCounters.get(slot);
         return atomicInteger != null && atomicInteger.get() > 0;
+    }
+
+    @Override
+    public boolean has(CosmeticConfig config) {
+        return this.cosmetics.stream()
+                .anyMatch(cosmetic -> cosmetic.config().equals(config));
+    }
+
+    @Override
+    public List<Cosmetic<?>> matching(CosmeticConfig config) {
+        List<Cosmetic<?>> matching = new ArrayList<>();
+        for (Cosmetic<?> cosmetic : this.cosmetics) {
+            if (cosmetic.config().equals(config)) {
+                matching.add(cosmetic);
+            }
+        }
+
+        return matching;
+    }
+
+    @Override
+    public synchronized void updatePermissionCosmetics() {
+        Player player = this.onlinePlayer;
+        if (player == null) {
+            LogUtils.warn("Can't update permissions for a player who is not yet online!");
+            return;
+        }
+
+        for (CosmeticConfig cosmeticConfig : AxCosmeticsAPI.instance().cosmeticConfigs().registered()) {
+            if (cosmeticConfig.permission() == null) {
+                continue;
+            }
+
+            if (!player.hasPermission(cosmeticConfig.permission())) {
+                List<Cosmetic<?>> matching = this.matching(cosmeticConfig);
+                if (matching.isEmpty()) {
+                    continue;
+                }
+
+                // Remove cosmetics that the user doesn't have permissions for
+                for (Cosmetic<?> cosmetic : matching) {
+                    this.deleteCosmetic(cosmetic);
+                }
+                continue;
+            }
+
+            if (this.has(cosmeticConfig)) {
+                continue;
+            }
+
+            TriFunction<com.artillexstudios.axcosmetics.api.user.User, CosmeticData, CosmeticConfig, Cosmetic<CosmeticConfig>> fetch1 = AxCosmeticsAPI.instance().cosmeticTypes().fetch(cosmeticConfig.type());
+            if (fetch1 == null) {
+                continue;
+            }
+
+            Cosmetic<?> cosmetic = fetch1.apply(this, new CosmeticData(0, 0, 0, System.currentTimeMillis()), cosmeticConfig);
+            this.addCosmetic(cosmetic);
+        }
     }
 
     @Override

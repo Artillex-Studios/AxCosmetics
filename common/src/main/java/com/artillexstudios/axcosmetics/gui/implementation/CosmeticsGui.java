@@ -9,6 +9,7 @@ import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.AxCosmeticsPlugin;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.user.User;
+import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.config.Language;
 import com.artillexstudios.axcosmetics.cosmetics.type.ArmorCosmetic;
 import com.artillexstudios.axcosmetics.cosmetics.type.FirstPersonBackpackCosmetic;
@@ -33,6 +34,9 @@ public class CosmeticsGui extends GuiBase {
 
     public CosmeticsGui(User user) {
         super(user, COSMETIC_CONFIG, true, false);
+        if (Config.refreshPermissionCosmeticsOnGuiOpen) {
+            this.user().updatePermissionCosmetics();
+        }
     }
 
     @Override

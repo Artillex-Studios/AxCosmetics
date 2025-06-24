@@ -16,6 +16,12 @@ public final class Config implements ConfigurationPart {
     public static DatabaseConfig database = new DatabaseConfig();
 
     @Comment("""
+            This setting controls if the plugin should refresh the player's
+            available cosmetics, which are granted by permission.
+            This has a small impact on performance, so it's disabled by default.
+            """)
+    public static boolean refreshPermissionCosmeticsOnGuiOpen = false;
+    @Comment("""
             This setting controls how often the plugin will resend
             armor cosmetics, if they have been marked as needing a resend.
             This is the amount of ticks, by the tick frequency that need to pass.

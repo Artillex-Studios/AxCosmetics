@@ -3,15 +3,20 @@ package com.artillexstudios.axcosmetics.listener;
 import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
+import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
+import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
 import com.artillexstudios.axcosmetics.api.exception.UserAlreadyLoadedException;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.user.UserRepository;
+import org.apache.commons.lang3.function.TriFunction;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+
+import java.util.List;
 
 public final class PlayerListener implements Listener {
     private final UserRepository repository;
@@ -34,6 +39,7 @@ public final class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerJoinEvent(PlayerJoinEvent event) {
         User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(event.getPlayer());
+        user.updatePermissionCosmetics();
 
         for (Cosmetic<?> cosmetic : user.getEquippedCosmetics()) {
             if (Config.debug) {
