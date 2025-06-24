@@ -94,7 +94,6 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
         this.firstPersonEntity.rotate(yaw, 0);
         this.firstPersonEntity.rotateHead(yaw);
 
-        // TODO: Do we need to rotate the head?
         this.entity.rotate(yaw, 0);
         if (Config.forceRidePackets) {
             this.firstPersonEntity.ride(this.firstPersonInteractionEntity.id());
