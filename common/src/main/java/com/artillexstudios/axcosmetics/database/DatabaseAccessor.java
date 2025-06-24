@@ -22,13 +22,13 @@ import java.util.concurrent.CompletableFuture;
 public final class DatabaseAccessor {
     private final DatabaseHandler handler;
     private final DatabaseQuery<List<UserDTO>> userSelect;
-    private final DatabaseQuery<Integer> userInsert;
-    private final DatabaseQuery<Integer> cosmeticConfigSelect;
-    private final DatabaseQuery<Integer> cosmeticConfigInsert;
-    private final DatabaseQuery<Integer> cosmeticInsert;
+    private final DatabaseQuery<Number> userInsert;
+    private final DatabaseQuery<Number> cosmeticConfigSelect;
+    private final DatabaseQuery<Number> cosmeticConfigInsert;
+    private final DatabaseQuery<Number> cosmeticInsert;
     private final DatabaseQuery<Object> cosmeticDelete;
-    private final DatabaseQuery<Integer> cosmeticEditionGenerate;
-    private final DatabaseQuery<Integer> cosmeticUpdate;
+    private final DatabaseQuery<Number> cosmeticEditionGenerate;
+    private final DatabaseQuery<Number> cosmeticUpdate;
 
     public DatabaseAccessor(DatabaseHandler handler) {
         this.handler = handler;
@@ -56,7 +56,7 @@ public final class DatabaseAccessor {
     public CompletableFuture<User> loadUser(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> {
             List<UserDTO> userDTOS = this.userSelect.create()
-                    .query(uuid);
+                    .query(uuid.toString());
 
             if (userDTOS != null && !userDTOS.isEmpty()) {
                 if (Config.debug) {
@@ -67,8 +67,8 @@ public final class DatabaseAccessor {
             }
 
             OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
-            Integer userId = this.userInsert.create()
-                    .execute(player.getName(), uuid);
+            Number userId = this.userInsert.create()
+                    .execute(uuid.toString());
 
             if (Config.debug) {
                 LogUtils.debug("Creating new user with uuid {}, id: {}", uuid, userId);
@@ -79,7 +79,7 @@ public final class DatabaseAccessor {
                 return null;
             }
 
-            return new com.artillexstudios.axcosmetics.user.User(userId, player, List.of(), this);
+            return new User(userId.intValue(), player, List.of(), this);
         }, AsyncUtils.executor()).exceptionally(throwable -> {
             LogUtils.error("Failed to run user load query!", throwable);
             return null;
@@ -123,20 +123,20 @@ public final class DatabaseAccessor {
             int edition = cosmetic.data().counter();
             if (edition == 0) {
                 // generate new edition from the database
-                Integer query = this.cosmeticEditionGenerate.create()
+                Number query = this.cosmeticEditionGenerate.create()
                         .query(cosmetic.config().id());
                 query = query == null ? 0 : query;
-                edition = query + 1;
+                edition = query.intValue() + 1;
             }
 
-            Integer cosmeticId = this.cosmeticInsert.create()
+            Number cosmeticId = this.cosmeticInsert.create()
                     .execute(user.id(), cosmetic.config().id(), edition, cosmetic.data().color(), cosmetic.data().timeStamp(), false);
 
             if (Config.debug) {
                 LogUtils.debug("Inserting cosmetic: {}, id: {}, edition: {}, user: {}", cosmetic, cosmetic, edition, user);
             }
 
-            cosmetic.data(new CosmeticData(cosmeticId, edition, cosmetic.data().color(), cosmetic.data().timeStamp()));
+            cosmetic.data(new CosmeticData(cosmeticId.intValue(), edition, cosmetic.data().color(), cosmetic.data().timeStamp()));
         }, AsyncUtils.executor()).exceptionally(throwable -> {
             LogUtils.error("Failed to run cosmetic insert query!", throwable);
             return null;
@@ -145,21 +145,25 @@ public final class DatabaseAccessor {
 
     public CompletableFuture<Integer> registerCosmeticConfig(CosmeticConfig config) {
         return CompletableFuture.supplyAsync(() -> {
-            Integer cosmeticConfigId = this.cosmeticConfigSelect.create()
+            LogUtils.debug(config.name());
+            Number cosmeticConfigId = this.cosmeticConfigSelect.create()
                     .query(config.name());
 
             if (cosmeticConfigId != null) {
-                return cosmeticConfigId;
+                LogUtils.debug("Found cosmetic!");
+                return cosmeticConfigId.intValue();
             }
 
             cosmeticConfigId = this.cosmeticConfigInsert.create()
                     .execute(config.name());
+
             if (cosmeticConfigId == null) {
                 LogUtils.error("Failed to insert cosmetic config {}!", config.name());
                 return null;
             }
 
-            return cosmeticConfigId;
+            LogUtils.debug("Inserted cosmetic!", cosmeticConfigId);
+            return cosmeticConfigId.intValue();
         }, AsyncUtils.executor()).exceptionally(throwable -> {
             LogUtils.error("Failed to run cosmetic config register query!", throwable);
             return null;

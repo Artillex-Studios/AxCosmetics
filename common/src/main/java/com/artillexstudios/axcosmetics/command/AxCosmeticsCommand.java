@@ -5,9 +5,8 @@ import com.artillexstudios.axapi.config.YamlConfiguration;
 import com.artillexstudios.axapi.database.handler.ListHandler;
 import com.artillexstudios.axapi.database.handler.SimpleHandler;
 import com.artillexstudios.axapi.database.handler.TransformerHandler;
-import com.artillexstudios.axapi.items.WrappedItemStack;
 import com.artillexstudios.axapi.libs.snakeyaml.DumperOptions;
-import com.artillexstudios.axapi.utils.ItemBuilder;
+import com.artillexstudios.axapi.scheduler.Scheduler;
 import com.artillexstudios.axapi.utils.MessageUtils;
 import com.artillexstudios.axapi.utils.Pair;
 import com.artillexstudios.axapi.utils.logging.LogUtils;
@@ -37,7 +36,6 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -166,6 +164,8 @@ public class AxCosmeticsCommand {
                                                 options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
                                                 options.setSplitLines(false);
                                             }).build();
+
+                                    newConfig.load();
                                     List<Pair<String, String>> permissions = new ArrayList<>();
                                     for (File file : resolve.toFile().listFiles()) {
                                         YamlConfiguration<?> configuration = YamlConfiguration.of(file.toPath())
@@ -173,28 +173,38 @@ public class AxCosmeticsCommand {
                                                     options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
                                                     options.setSplitLines(false);
                                                 }).build();
+                                        configuration.load();
 
                                         for (String key : configuration.keys()) {
                                             String slot = configuration.getString(key + ".slot");
                                             permissions.add(Pair.of(key, configuration.getString(key + ".permission")));
                                             if (slot.equalsIgnoreCase("backpack")) {
-                                                WrappedItemStack stack = new ItemBuilder((Map<Object, Object>) configuration.getMap(key + ".item"))
-                                                        .wrapped();
-                                                
-                                                WrappedItemStack firstPersonStack = new ItemBuilder((Map<Object, Object>) configuration.getMap(key + ".item"))
-                                                        .wrapped();
                                                 newConfig.set(key + ".slot", "backpack");
                                                 newConfig.set(key + ".type", "backpack");
                                                 newConfig.set(key + ".height", 1.5);
-                                                newConfig.set(key + ".item-stack", stack);
-                                                newConfig.set(key + ".first-person-item-stack", firstPersonStack);
-                                            } else if (slot.equalsIgnoreCase("HELMET")) {
-                                                WrappedItemStack stack = new ItemBuilder((Map<Object, Object>) configuration.getMap(key + ".item"))
-                                                        .wrapped();
+                                                String material = configuration.getString(key + ".item.material");
+                                                String name = configuration.getString(key + ".item.name");
+                                                Integer customModelData = configuration.getInteger(key + ".item.custom-model-data");
 
+                                                String firstPersonMaterial = configuration.getString(key + ".firstperson-item.material");
+                                                String firstPersonName = configuration.getString(key + ".firstperson-item.name");
+                                                Integer firstPersonCustomModelData = configuration.getInteger(key + ".firstperson-item.custom-model-data");
+
+                                                newConfig.set(key + ".item-stack.material", material);
+                                                newConfig.set(key + ".item-stack.name", name);
+                                                newConfig.set(key + ".item-stack.custom-model-data", customModelData);
+                                                newConfig.set(key + ".first-person-item-stack.material", firstPersonMaterial);
+                                                newConfig.set(key + ".first-person-item-stack.name", firstPersonName);
+                                                newConfig.set(key + ".first-person-item-stack.custom-model-data", firstPersonCustomModelData);
+                                            } else if (slot.equalsIgnoreCase("HELMET")) {
                                                 newConfig.set(key + ".slot", "helmet");
                                                 newConfig.set(key + ".type", "armor");
-                                                newConfig.set(key + ".item-stack", stack);
+                                                String material = configuration.getString(key + ".item.material");
+                                                String name = configuration.getString(key + ".item.name");
+                                                Integer customModelData = configuration.getInteger(key + ".item.custom-model-data");
+                                                newConfig.set(key + ".item-stack.material", material);
+                                                newConfig.set(key + ".item-stack.name", name);
+                                                newConfig.set(key + ".item-stack.custom-model-data", customModelData);
                                             } else {
                                                 sender.sendMessage("Don't know how to convert slot: " + slot);
                                             }
@@ -202,29 +212,41 @@ public class AxCosmeticsCommand {
                                     }
 
                                     newConfig.save();
-
+                                    LogUtils.warn("Permissions: {}", permissions);
                                     List<CompletableFuture<?>> completableFutures = AxCosmeticsPlugin.instance().configLoader().loadFile(convertedPath.toFile());
-                                    CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenRun(() -> {
+                                    CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenRunAsync(() -> {
                                         sender.sendMessage("Converted cosmetics! Starting user data conversion!");
 
                                         for (Pair<String, String> permission : permissions) {
-                                            List<String> uuids = AxCosmeticsPlugin.instance().handler()
+                                            List<UUID> uuids = new ArrayList<>(AxCosmeticsPlugin.instance().handler()
                                                     .rawQuery("SELECT uuid FROM luckperms_user_permissions WHERE permission = ?;", new ListHandler<>(new SimpleHandler<String>()))
                                                     .create()
-                                                    .query(permission.second());
+                                                    .query(permission.second()).stream()
+                                                    .map(UUID::fromString)
+                                                    .toList());
+                                            LogUtils.info("Permission: {}, UUIDS: {}", permission.first(), uuids);
 
-                                            List<CosmeticConvertData> datas = AxCosmeticsPlugin.instance().handler()
+                                            List<UUIDCosmeticConvertData> datas = AxCosmeticsPlugin.instance().handler()
                                                     .rawQuery("SELECT acted_uuid, time FROM luckperms_actions WHERE action LIKE ? ORDER BY time DESC;", new ListHandler<>(new TransformerHandler<>(CosmeticConvertData.class)))
                                                     .create()
-                                                    .query("permission set " + permission.second() + " %");
+                                                    .query("permission set " + permission.second() + " %").stream()
+                                                    .filter(data -> data.uuid != null &&
+                                                            !data.uuid.trim().isEmpty() &&
+                                                            !"null".equalsIgnoreCase(data.uuid))
+                                                    .map(data -> {
+                                                        return new UUIDCosmeticConvertData(UUID.fromString(data.uuid), data.time);
+                                                    }).toList();
 
-                                            for (CosmeticConvertData data : datas) {
-                                                if (!uuids.contains(data.uuid)) {
+                                            int converted = 0;
+                                            int fixed = 0;
+                                            for (UUIDCosmeticConvertData data : datas) {
+                                                if (!uuids.remove(data.uuid)) {
                                                     sender.sendMessage("Skipping, due to not being in uuids!");
                                                     continue;
                                                 }
+                                                converted++;
 
-                                                AxCosmeticsAPI.instance().getUser(UUID.fromString(data.uuid)).thenAccept(user -> {
+                                                AxCosmeticsAPI.instance().getUser(data.uuid).thenAccept(user -> {
                                                     CosmeticConfig fetch = AxCosmeticsAPI.instance().cosmeticConfigs().fetch(permission.first());
                                                     if (fetch == null) {
                                                         LogUtils.error("No fetched with id {}", permission.first());
@@ -241,8 +263,35 @@ public class AxCosmeticsCommand {
                                                     user.addCosmetic(cosmetic);
                                                 });
                                             }
-                                            sender.sendMessage("Converted: " + permission.first());
+
+                                            for (UUID uuid : uuids) {
+                                                LogUtils.info("No action data for uuids: {}", uuid);
+                                                fixed++;
+                                                AxCosmeticsAPI.instance().getUser(uuid).thenAccept(user -> {
+                                                    CosmeticConfig fetch = AxCosmeticsAPI.instance().cosmeticConfigs().fetch(permission.first());
+                                                    if (fetch == null) {
+                                                        LogUtils.error("No fetched with id {}", permission.first());
+                                                        return;
+                                                    }
+
+                                                    TriFunction<User, CosmeticData, CosmeticConfig, Cosmetic<CosmeticConfig>> fetch1 = AxCosmeticsAPI.instance().cosmeticTypes().fetch(fetch.type());
+                                                    if (fetch1 == null) {
+                                                        LogUtils.error("No other fetched with id {}", fetch.type());
+                                                        return;
+                                                    }
+
+                                                    Cosmetic<?> cosmetic = fetch1.apply(user, new CosmeticData(0, 0, 0, System.currentTimeMillis()), fetch);
+                                                    user.addCosmetic(cosmetic);
+                                                }).exceptionally(throwable -> {
+                                                    LogUtils.error("Error occurred!", throwable);
+                                                    return null;
+                                                });
+                                            }
+                                            sender.sendMessage("Converted: " + permission.first() + " count: " + converted + " fixed: " + fixed);
                                         }
+                                    }, runnable -> Scheduler.get().run(task -> runnable.run())).exceptionally(throwable -> {
+                                        LogUtils.error("Error!", throwable);
+                                        return null;
                                     });
                                 })
                         )
@@ -251,6 +300,10 @@ public class AxCosmeticsCommand {
     }
 
     public record CosmeticConvertData(String uuid, long time) {
+
+    }
+
+    public record UUIDCosmeticConvertData(UUID uuid, long time) {
 
     }
 }

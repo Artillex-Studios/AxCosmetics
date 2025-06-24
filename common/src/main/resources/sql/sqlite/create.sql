@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS $table_prefixaxcosmetics_users (id INTEGER PRIMARY KEY AUTOINCREMENT, uuid VARCHAR(36), name VARCHAR(16));
+CREATE TABLE IF NOT EXISTS $table_prefixaxcosmetics_users (id INTEGER PRIMARY KEY AUTOINCREMENT, uuid VARCHAR(36));
 
 CREATE TABLE IF NOT EXISTS $table_prefixaxcosmetics_cosmetic_configs (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(255));
 

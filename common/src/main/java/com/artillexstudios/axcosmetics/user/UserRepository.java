@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 public final class UserRepository implements com.artillexstudios.axcosmetics.api.user.UserRepository {
     private final DatabaseAccessor accessor;
     private final ConcurrentHashMap<UUID, User> loadedUsers = new ConcurrentHashMap<>();
+    private final HashMap<UUID, CompletableFuture<User>> loadingUsers = new HashMap<>();
     private final ConcurrentHashMap<Integer, User> idLoadedUsers = new ConcurrentHashMap<>();
     private final Cache<UUID, User> tempUsers = Caffeine.newBuilder()
             .expireAfterAccess(5, TimeUnit.MINUTES)
@@ -94,21 +96,34 @@ public final class UserRepository implements com.artillexstudios.axcosmetics.api
             return CompletableFuture.completedFuture(user);
         }
 
-        // Deal with funny loading order
-        return this.accessor.loadUser(uuid).thenApply(loaded -> {
-            User temp;
-            if (loadContext == LoadContext.FULL) {
-                temp = this.loadedUsers.putIfAbsent(uuid, loaded);
-            } else {
-                temp = this.tempUsers.asMap().putIfAbsent(uuid, loaded);
+        synchronized (this.loadingUsers) {
+            CompletableFuture<User> userCompletableFuture = this.loadingUsers.get(uuid);
+            if (userCompletableFuture != null) {
+                return userCompletableFuture;
             }
 
-            if (Config.debug) {
-                LogUtils.debug("Temp: {}, loaded: {}", temp, loaded);
-            }
+            // Deal with funny loading order
+            CompletableFuture<User> future = this.accessor.loadUser(uuid).thenApply(loaded -> {
+                User temp;
+                if (loadContext == LoadContext.FULL) {
+                    temp = this.loadedUsers.putIfAbsent(uuid, loaded);
+                } else {
+                    temp = this.tempUsers.asMap().putIfAbsent(uuid, loaded);
+                }
 
-            return temp == null ? loaded : temp;
-        });
+                if (Config.debug) {
+                    LogUtils.debug("Temp: {}, loaded: {}", temp, loaded);
+                }
+
+                synchronized (this.loadingUsers) {
+                    this.loadingUsers.remove(uuid);
+                }
+                return temp == null ? loaded : temp;
+            });
+
+            this.loadingUsers.put(uuid, future);
+            return future;
+        }
     }
 
     @Override

@@ -59,7 +59,7 @@ public final class CosmeticConfigLoader {
 
             try {
                 Map<String, Object> map = (Map<String, Object>) configuration.getMap(key);
-                CosmeticConfig cosmeticConfig = cosmeticSupplier.apply(type, map);
+                CosmeticConfig cosmeticConfig = cosmeticSupplier.apply(key, map);
                 if (Config.debug) {
                     LogUtils.debug("Loading cosmetic config {} from data: {}!", key, map);
                 }
