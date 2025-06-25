@@ -74,6 +74,7 @@ public final class AxCosmeticsPlugin extends AxPlugin {
         Language.reload();
         AsyncUtils.setup(Config.asyncProcessorPoolSize);
 
+        Config.database.tablePrefix(Config.tablePrefix);
         this.handler = new DatabaseHandler(this, Config.database);
         DatabaseAccessor accessor = new DatabaseAccessor(this.handler);
         this.userRepository = new UserRepository(accessor);
