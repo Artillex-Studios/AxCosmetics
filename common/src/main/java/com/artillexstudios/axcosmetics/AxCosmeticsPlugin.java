@@ -7,13 +7,10 @@ import com.artillexstudios.axapi.database.impl.H2DatabaseType;
 import com.artillexstudios.axapi.database.impl.MySQLDatabaseType;
 import com.artillexstudios.axapi.database.impl.SQLiteDatabaseType;
 import com.artillexstudios.axapi.dependencies.DependencyManagerWrapper;
-import com.artillexstudios.axapi.libs.hikari.HikariConfig;
-import com.artillexstudios.axapi.libs.hikari.HikariDataSource;
 import com.artillexstudios.axapi.packet.PacketEvents;
 import com.artillexstudios.axapi.packetentity.meta.EntityMetaFactory;
 import com.artillexstudios.axapi.utils.AsyncUtils;
 import com.artillexstudios.axapi.utils.featureflags.FeatureFlags;
-import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
 import com.artillexstudios.axcosmetics.command.AxCosmeticsCommand;
@@ -41,9 +38,6 @@ import com.artillexstudios.axcosmetics.user.UserRepository;
 import com.artillexstudios.axcosmetics.utils.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
-import org.jetbrains.annotations.NotNull;
-
-import java.sql.SQLException;
 
 public final class AxCosmeticsPlugin extends AxPlugin {
     private static AxCosmeticsPlugin instance;
@@ -80,15 +74,7 @@ public final class AxCosmeticsPlugin extends AxPlugin {
         Language.reload();
         AsyncUtils.setup(Config.asyncProcessorPoolSize);
 
-        HikariDataSource dataSource = this.getHikariDataSource();
-        this.handler = new DatabaseHandler(this, Config.database, () -> {
-            try {
-                return dataSource.getConnection();
-            } catch (SQLException exception) {
-                LogUtils.error("Failed to acquire connection from datasource!", exception);
-                throw new RuntimeException(exception);
-            }
-        });
+        this.handler = new DatabaseHandler(this, Config.database);
         DatabaseAccessor accessor = new DatabaseAccessor(this.handler);
         this.userRepository = new UserRepository(accessor);
         this.slots = new CosmeticSlots();
@@ -142,19 +128,6 @@ public final class AxCosmeticsPlugin extends AxPlugin {
         AxCosmeticsCommand.disable();
         AsyncUtils.stop();
         this.handler.close();
-    }
-
-    @NotNull
-    private HikariDataSource getHikariDataSource() {
-        Config.database.tablePrefix(Config.tablePrefix);
-        HikariConfig config = Config.database.type.config(Config.database);
-        config.setPoolName("axapi-" + this.getName() + "-database-pool");
-        if (Config.database.url != null && !(Config.database.type instanceof MySQLDatabaseType)) {
-            config.addDataSourceProperty("url", Config.database.url);
-        }
-        config.addDataSourceProperty("allowMultiQueries", "true");
-
-        return new HikariDataSource(config);
     }
 
     public static AxCosmeticsPlugin instance() {

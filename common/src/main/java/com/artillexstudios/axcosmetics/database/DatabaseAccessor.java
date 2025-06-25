@@ -56,7 +56,7 @@ public final class DatabaseAccessor {
     public CompletableFuture<User> loadUser(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> {
             List<UserDTO> userDTOS = this.userSelect.create()
-                    .query(uuid.toString());
+                    .query(uuid);
 
             if (userDTOS != null && !userDTOS.isEmpty()) {
                 if (Config.debug) {
@@ -68,7 +68,7 @@ public final class DatabaseAccessor {
 
             OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
             Number userId = this.userInsert.create()
-                    .execute(uuid.toString());
+                    .execute(uuid);
 
             if (Config.debug) {
                 LogUtils.debug("Creating new user with uuid {}, id: {}", uuid, userId);
