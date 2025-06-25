@@ -6,6 +6,7 @@ import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
 import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
+import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.database.DatabaseAccessor;
 import com.artillexstudios.axcosmetics.database.dto.UserDTO;
 import org.apache.commons.lang3.function.TriFunction;
@@ -42,6 +43,11 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
         this.accessor = accessor;
         for (UserDTO userDTO : userDTOS) {
             Cosmetic<CosmeticConfig> cosmetic = AxCosmeticsAPI.instance().createCosmetic(this, userDTO.cosmeticTypeId(), new CosmeticData(userDTO.cosmeticId(), userDTO.counter(), userDTO.color(), userDTO.timeStamp()));
+            if (cosmetic == null) {
+                LogUtils.warn("Encountered unknown cosmetic with data: {}!", userDTO);
+                continue;
+            }
+
             this.cosmetics.add(cosmetic);
             if (userDTO.equipped()) {
                 this.priorityEquipped.put(cosmetic.slot(), cosmetic);
@@ -94,6 +100,7 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
 
     @Override
     public <T extends CosmeticConfig> CompletableFuture<?> deleteCosmetic(Cosmetic<T> cosmetic) {
+        this.cosmetics.remove(cosmetic);
         this.unequipCosmetic(cosmetic);
         return this.accessor.deleteCosmetic(cosmetic);
     }
@@ -270,31 +277,56 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
 
         for (CosmeticConfig cosmeticConfig : AxCosmeticsAPI.instance().cosmeticConfigs().registered()) {
             if (cosmeticConfig.permission() == null) {
+                if (Config.debug) {
+                    LogUtils.debug("Cosmetic's permission is null!");
+                }
                 continue;
             }
 
             if (!player.hasPermission(cosmeticConfig.permission())) {
+                if (Config.debug) {
+                    LogUtils.debug("Has no permission!");
+                }
+
                 List<Cosmetic<?>> matching = this.matching(cosmeticConfig);
                 if (matching.isEmpty()) {
+                    if (Config.debug) {
+                        LogUtils.debug("Has no matching");
+                    }
                     continue;
                 }
 
                 // Remove cosmetics that the user doesn't have permissions for
                 for (Cosmetic<?> cosmetic : matching) {
+                    if (Config.debug) {
+                        LogUtils.debug("Deleting cosmetic {}", cosmetic);
+                    }
                     this.deleteCosmetic(cosmetic);
                 }
                 continue;
             }
 
+            if (Config.debug) {
+                LogUtils.debug("Has permission!");
+            }
             if (this.has(cosmeticConfig)) {
+                if (Config.debug) {
+                    LogUtils.debug("Alread has cosmetic!");
+                }
                 continue;
             }
 
             TriFunction<com.artillexstudios.axcosmetics.api.user.User, CosmeticData, CosmeticConfig, Cosmetic<CosmeticConfig>> fetch1 = AxCosmeticsAPI.instance().cosmeticTypes().fetch(cosmeticConfig.type());
             if (fetch1 == null) {
+                if (Config.debug) {
+                    LogUtils.debug("Couldn't find cosmetic provider for type: {}!", cosmeticConfig.type());
+                }
                 continue;
             }
 
+            if (Config.debug) {
+                LogUtils.debug("Adding cosmetic!");
+            }
             Cosmetic<?> cosmetic = fetch1.apply(this, new CosmeticData(0, 0, 0, System.currentTimeMillis()), cosmeticConfig);
             this.addCosmetic(cosmetic);
         }

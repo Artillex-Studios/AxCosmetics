@@ -45,7 +45,7 @@ public abstract class CosmeticConfig implements ConfigurationGetter {
 
     @Override
     public <T> T get(String path, Class<T> clazz) throws MissingConfigurationOptionException {
-        T value = this.getNullable("path", clazz);
+        T value = this.getNullable(path, clazz);
         if (value == null) {
             throw new MissingConfigurationOptionException(path);
         }
