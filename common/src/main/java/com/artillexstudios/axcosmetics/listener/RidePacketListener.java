@@ -10,6 +10,7 @@ import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.cosmetics.type.FirstPersonBackpackCosmetic;
+import org.apache.commons.lang3.ArrayUtils;
 
 public final class RidePacketListener extends PacketListener {
 
@@ -43,23 +44,33 @@ public final class RidePacketListener extends PacketListener {
 
                 if (receiver == user) {
                     // First person cosmetic
-                    if (!wrapper.passengers().contains(cosmetic.interactionEntityId())) {
+                    Integer interactionEntityId = cosmetic.interactionEntityId();
+                    if (interactionEntityId == null) {
+                        continue;
+                    }
+
+                    if (!ArrayUtils.contains(wrapper.passengers(), interactionEntityId)) {
                         if (Config.debug) {
                             LogUtils.debug("Fixing passengers for user: {}, vehicle: {}, passengers: {}", receiver, user, wrapper.passengers());
                         }
 
-                        wrapper.passengers().add(cosmetic.interactionEntityId());
+                        wrapper.passengers(ArrayUtils.add(wrapper.passengers(), interactionEntityId));
                     } else if (Config.debug) {
                         LogUtils.debug("No need to fix, the entity is already there!");
                     }
                 } else {
+                    Integer entityId = cosmetic.entityId();
+                    if (entityId == null) {
+                        continue;
+                    }
+
                     // Sending to someone else, so not first person
-                    if (!wrapper.passengers().contains(cosmetic.entityId())) {
+                    if (!ArrayUtils.contains(wrapper.passengers(), entityId)) {
                         if (Config.debug) {
                             LogUtils.debug("Fixing passengers for user: {}, vehicle: {}, passengers: {}", receiver, user, wrapper.passengers());
                         }
 
-                        wrapper.passengers().add(cosmetic.entityId());
+                        wrapper.passengers(ArrayUtils.add(wrapper.passengers(), entityId));
                     } else if (Config.debug) {
                         LogUtils.debug("No need to fix, the entity is already there!");
                     }
