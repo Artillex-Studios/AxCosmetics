@@ -227,7 +227,7 @@ public class AxCosmeticsCommand {
                                             LogUtils.info("Permission: {}, UUIDS: {}", permission.first(), uuids);
 
                                             List<UUIDCosmeticConvertData> datas = AxCosmeticsPlugin.instance().handler()
-                                                    .rawQuery("SELECT acted_uuid, time FROM luckperms_actions WHERE action LIKE ? ORDER BY time DESC;", new ListHandler<>(new TransformerHandler<>(CosmeticConvertData.class)))
+                                                    .rawQuery("SELECT acted_uuid, time FROM luckperms_actions WHERE action LIKE ? ORDER BY time ASC;", new ListHandler<>(new TransformerHandler<>(CosmeticConvertData.class)))
                                                     .create()
                                                     .query("permission set " + permission.second() + " %").stream()
                                                     .filter(data -> data.uuid != null &&

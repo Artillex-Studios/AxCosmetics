@@ -42,6 +42,10 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
         this.offlinePlayer = offlinePlayer;
         this.accessor = accessor;
         for (UserDTO userDTO : userDTOS) {
+            if (userDTO.cosmeticTypeId() == null || userDTO.cosmeticId() == null) {
+                continue;
+            }
+
             Cosmetic<CosmeticConfig> cosmetic = AxCosmeticsAPI.instance().createCosmetic(this, userDTO.cosmeticTypeId(), new CosmeticData(userDTO.cosmeticId(), userDTO.counter(), userDTO.color(), userDTO.timeStamp()));
             if (cosmetic == null) {
                 LogUtils.warn("Encountered unknown cosmetic with data: {}!", userDTO);

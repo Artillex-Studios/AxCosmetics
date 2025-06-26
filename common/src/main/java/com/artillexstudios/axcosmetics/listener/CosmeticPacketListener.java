@@ -6,6 +6,7 @@ import com.artillexstudios.axapi.packet.PacketEvent;
 import com.artillexstudios.axapi.packet.PacketListener;
 import com.artillexstudios.axapi.packet.ServerboundPacketTypes;
 import com.artillexstudios.axapi.packet.wrapper.clientbound.ClientboundAddEntityWrapper;
+import com.artillexstudios.axapi.packet.wrapper.clientbound.ClientboundContainerSetContentWrapper;
 import com.artillexstudios.axapi.packet.wrapper.clientbound.ClientboundContainerSetSlotWrapper;
 import com.artillexstudios.axapi.packet.wrapper.clientbound.ClientboundSetEquipmentWrapper;
 import com.artillexstudios.axapi.utils.EquipmentSlot;
@@ -120,10 +121,27 @@ public final class CosmeticPacketListener extends PacketListener {
                 return;
             }
 
-            if (Config.debug) {
-                LogUtils.debug("SET CONTENT!");
+            ClientboundContainerSetContentWrapper wrapper = new ClientboundContainerSetContentWrapper(event);
+            int containerId = wrapper.containerId();
+            if (containerId != 0) {
+                if (Config.debug) {
+                    LogUtils.debug("Container set content packet, not player inventory");
+                }
+                return;
             }
-            sendUserArmorUpdate(user, event.player());
+
+            if (Config.debug) {
+                LogUtils.debug("SET CONTENT! Items: {}", wrapper.items());
+            }
+            for (Cosmetic<?> equippedCosmetic : user.getEquippedCosmetics()) {
+                if (!(equippedCosmetic instanceof ArmorCosmetic armorCosmetic)) {
+                    continue;
+                }
+
+                int index = equipmentSlot(armorCosmetic.slot(), user.onlinePlayer());
+                wrapper.items().set(index, armorCosmetic.config().itemStack(armorCosmetic.data()));
+            }
+            wrapper.markDirty();
         }
     }
 
@@ -182,5 +200,26 @@ public final class CosmeticPacketListener extends PacketListener {
             case 8 -> CosmeticSlots.BOOTS;
             default -> null;
         };
+    }
+
+    public static int equipmentSlot(CosmeticSlot slot, Player player) {
+        return switch (slot.name()) {
+            case "helmet" -> 5;
+            case "chest_plate" -> 6;
+            case "leggings" -> 7;
+            case "boots" -> 8;
+            case "main_hand" -> heldItemSlot(player);
+            case "off_hand" -> 45;
+            case null, default -> throw new IllegalStateException();
+        };
+    }
+
+    public static int heldItemSlot(Player player) {
+        int slot = player.getInventory().getHeldItemSlot();
+        if (slot < 0 || slot > 8) {
+            throw new IllegalArgumentException();
+        }
+
+        return slot + 36;
     }
 }

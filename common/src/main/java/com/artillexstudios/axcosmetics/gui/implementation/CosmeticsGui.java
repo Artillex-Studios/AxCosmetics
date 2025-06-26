@@ -60,7 +60,6 @@ public class CosmeticsGui extends GuiBase {
 
             if (this.user().isEquipped(cosmetic)) {
                 stack.set(DataComponents.enchantmentGlintOverride(), true);
-                stack.finishEdit();
                 this.gui().addItem(new GuiItem(stack.toBukkit(), event -> {
                     this.user().unequipCosmetic(cosmetic);
                     MessageUtils.sendMessage(player, Language.prefix, Language.unequip, Placeholder.unparsed("cosmetic", cosmetic.config().name()));
