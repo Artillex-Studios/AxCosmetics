@@ -16,12 +16,19 @@ public final class RidePacketListener extends PacketListener {
     @Override
     public void onPacketSending(PacketEvent event) {
         if (event.type() == ClientboundPacketTypes.SET_PASSENGERS) {
-            ClientboundSetPassengersWrapper wrapper = new ClientboundSetPassengersWrapper(event);
             User receiver = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(event.player());
-            User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(wrapper.vehicleId());
-            if (user == null || receiver == null) {
+            if (receiver == null) {
                 if (Config.debug) {
-                    LogUtils.debug("Passenger packet, receiver: {}, user: {}", receiver, user);
+                    LogUtils.debug("Passenger packet, receiver null!");
+                }
+                return;
+            }
+
+            ClientboundSetPassengersWrapper wrapper = new ClientboundSetPassengersWrapper(event);
+            User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(wrapper.vehicleId());
+            if (user == null) {
+                if (Config.debug) {
+                    LogUtils.debug("Passenger packet, user null!");
                 }
                 return;
             }
@@ -58,8 +65,6 @@ public final class RidePacketListener extends PacketListener {
                     }
                 }
             }
-
-            wrapper.markDirty();
         }
     }
 }
