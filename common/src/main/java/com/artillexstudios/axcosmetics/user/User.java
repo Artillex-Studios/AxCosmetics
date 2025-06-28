@@ -131,7 +131,7 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
 
     @Override
     public Collection<Cosmetic<?>> getEquippedCosmetics() {
-        return this.priorityEquipped.values();
+        return Collections.unmodifiableCollection(this.priorityEquipped.values());
     }
 
     @Override
@@ -230,7 +230,7 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
     }
 
     @Override
-    public void showSlot(CosmeticSlot slot) {
+    public void showSlot(CosmeticSlot slot) throws IllegalStateException {
         AtomicInteger atomicInteger = this.slotCounters.get(slot);
         if (atomicInteger == null || atomicInteger.get() == 0) {
             LogUtils.warn("This slot is already shown!");
