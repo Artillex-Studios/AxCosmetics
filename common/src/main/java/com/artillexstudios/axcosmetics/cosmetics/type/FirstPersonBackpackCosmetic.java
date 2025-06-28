@@ -62,6 +62,7 @@ public final class FirstPersonBackpackCosmetic extends Cosmetic<FirstPersonBackp
         this.firstPersonInteractionEntity = NMSHandlers.getNmsHandler().createEntity(EntityType.INTERACTION, this.location);
         InteractionMeta interactionMeta = (InteractionMeta) this.firstPersonInteractionEntity.meta();
         interactionMeta.height((float) this.config().height());
+        interactionMeta.width(0.1f);
         this.firstPersonInteractionEntity.setVisibleByDefault(false);
         this.firstPersonInteractionEntity.show(this.player);
         this.firstPersonInteractionEntity.spawn();
