@@ -1,7 +1,6 @@
 title: "Your Cosmetics"
 rows: 6
-
-equipped:
+page-size: 28
 
 items:
   - material: "gray_stained_glass_pane"
@@ -10,7 +9,7 @@ items:
       - 0-9
       - 17-18
       - 26-27
-      - 35-35
+      - 35-36
       - 44-53
   - material: "barrier"
     name: "<#FF0000>Close"
