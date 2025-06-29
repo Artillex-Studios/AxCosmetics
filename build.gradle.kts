@@ -30,7 +30,7 @@ subprojects {
     }
 
     dependencies {
-        implementation("com.artillexstudios.axapi:axapi:1.4.717:all")
+        implementation("com.artillexstudios.axapi:axapi:1.4.718:all")
         implementation("dev.jorel:commandapi-bukkit-shade:10.0.0")
         implementation("dev.triumphteam:triumph-gui:3.1.12")
         compileOnly("com.github.ben-manes.caffeine:caffeine:3.2.0")
