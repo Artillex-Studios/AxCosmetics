@@ -44,7 +44,7 @@ public final class RidePacketListener extends PacketListener {
 
                 if (receiver == user) {
                     // First person cosmetic
-                    Integer interactionEntityId = cosmetic.interactionEntityId();
+                    Integer interactionEntityId = cosmetic.firstPersonRiderId();
                     if (interactionEntityId == null) {
                         continue;
                     }
