@@ -32,6 +32,7 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
     private final ConcurrentLinkedQueue<Cosmetic<?>> cosmetics = new ConcurrentLinkedQueue<>();
     private final ConcurrentHashMap<CosmeticSlot, AtomicInteger> slotCounters = new ConcurrentHashMap<>();
     private final int id;
+    private final List<UserDTO> dtos;
     private final DatabaseAccessor accessor;
     private OfflinePlayer offlinePlayer;
     private Player onlinePlayer;
@@ -40,8 +41,17 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
     public User(int id, OfflinePlayer offlinePlayer, List<UserDTO> userDTOS, DatabaseAccessor accessor) {
         this.id = id;
         this.offlinePlayer = offlinePlayer;
+        this.dtos = new ArrayList<>(userDTOS);
         this.accessor = accessor;
-        for (UserDTO userDTO : userDTOS) {
+        this.createCosmetics();
+    }
+
+    private void createCosmetics() {
+        this.cosmetics.clear();
+        this.priorityEquipped.clear();
+        this.equipped.clear();
+
+        for (UserDTO userDTO : this.dtos) {
             if (userDTO.cosmeticTypeId() == null || userDTO.cosmeticId() == null) {
                 continue;
             }
@@ -61,12 +71,9 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
     }
 
     public void updateDataFrom(User user) {
-        this.cosmetics.clear();
-        this.cosmetics.addAll(user.cosmetics);
-        this.priorityEquipped.clear();
-        this.priorityEquipped.putAll(user.priorityEquipped);
-        this.equipped.clear();
-        this.equipped.putAll(user.equipped);
+        this.dtos.clear();
+        this.dtos.addAll(user.dtos);
+        this.createCosmetics();
     }
 
     @Override

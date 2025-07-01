@@ -86,11 +86,6 @@ public final class UserRepository implements com.artillexstudios.axcosmetics.api
         if (user != null) {
             this.tempUsers.invalidate(uuid);
             this.joiningUsers.put(uuid, user);
-            Player onlinePlayer = Bukkit.getPlayer(uuid);
-            if (onlinePlayer != null) {
-                ((com.artillexstudios.axcosmetics.user.User) user).player(onlinePlayer);
-                this.idLoadedUsers.put(onlinePlayer.getEntityId(), user);
-            }
             return this.accessor.loadUser(uuid).thenApply(newUser -> {
                 ((com.artillexstudios.axcosmetics.user.User) user).updateDataFrom(newUser);
                 return user;
