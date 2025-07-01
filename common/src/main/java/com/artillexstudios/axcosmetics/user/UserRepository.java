@@ -41,20 +41,7 @@ public final class UserRepository implements com.artillexstudios.axcosmetics.api
     public User getUserIfLoadedImmediately(UUID uuid) {
         User user = this.loadedUsers.get(uuid);
 
-        Player onlinePlayer = Bukkit.getPlayer(uuid);
-        if (onlinePlayer != null && user != null) {
-            if (Config.debug) {
-                LogUtils.debug("getUserIfLoadedImmediately - Player object is not null");
-            }
-            // Update the user's player and onlineplayer instances, if the entityId is new
-            if (this.idLoadedUsers.put(onlinePlayer.getEntityId(), user) == null) {
-                if (Config.debug) {
-                    LogUtils.debug("Added entityId of player");
-                }
-                ((com.artillexstudios.axcosmetics.user.User) user).player(onlinePlayer);
-                ((com.artillexstudios.axcosmetics.user.User) user).onlinePlayer(onlinePlayer);
-            }
-        }
+        this.updatePlayer(uuid, user);
 
         if (user != null) {
             if (Config.debug) {
@@ -65,6 +52,23 @@ public final class UserRepository implements com.artillexstudios.axcosmetics.api
 
         user = this.tempUsers.getIfPresent(uuid);
         return user;
+    }
+
+    private void updatePlayer(UUID uuid, User user) {
+        Player onlinePlayer = Bukkit.getPlayer(uuid);
+        if (onlinePlayer != null && user != null) {
+            if (Config.debug) {
+                LogUtils.debug("updatePlayer - Player object is not null");
+            }
+            // Update the user's player and onlineplayer instances, if the entityId is new
+            if (this.idLoadedUsers.put(onlinePlayer.getEntityId(), user) == null) {
+                if (Config.debug) {
+                    LogUtils.debug("Added entityId of player");
+                }
+                ((com.artillexstudios.axcosmetics.user.User) user).player(onlinePlayer);
+                ((com.artillexstudios.axcosmetics.user.User) user).onlinePlayer(onlinePlayer);
+            }
+        }
     }
 
     @Override
@@ -103,7 +107,9 @@ public final class UserRepository implements com.artillexstudios.axcosmetics.api
             return null;
         }
 
+        this.joiningUsers.invalidate(uuid);
         this.loadedUsers.put(uuid, user);
+        this.updatePlayer(uuid, user);
         return user;
     }
 
