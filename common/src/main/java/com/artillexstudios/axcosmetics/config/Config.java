@@ -10,11 +10,18 @@ import com.artillexstudios.axcosmetics.utils.FileUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class Config implements ConfigurationPart {
     private static final Config INSTANCE = new Config();
     public static DatabaseConfig database = new DatabaseConfig();
 
+
+    @Comment("""
+            The aliases for the /cosmetics gui command.
+            """)
+    public static List<String> aliases = new ArrayList<>(List.of("cosmetic"));
     @Comment("""
             This setting controls if the plugin should refresh the player's
             available cosmetics, which are granted by permission.

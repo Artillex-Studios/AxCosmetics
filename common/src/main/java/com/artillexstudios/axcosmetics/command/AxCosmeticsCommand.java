@@ -22,6 +22,7 @@ import com.artillexstudios.axcosmetics.gui.implementation.CosmeticsGui;
 import com.artillexstudios.axcosmetics.utils.FileUtils;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
+import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandTree;
 import dev.jorel.commandapi.arguments.AsyncOfflinePlayerArgument;
 import dev.jorel.commandapi.arguments.LiteralArgument;
@@ -57,6 +58,15 @@ public class AxCosmeticsCommand {
     }
 
     public static void register() {
+        for (String alias : Config.aliases) {
+            new CommandAPICommand(alias)
+                    .executesPlayer((sender, args) -> {
+                        User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender);
+                        new CosmeticsGui(user).open();
+                    })
+                    .register();
+        }
+
         new CommandTree("cosmetics")
                 .then(new LiteralArgument("gui")
                         .executesPlayer((sender, args) -> {
