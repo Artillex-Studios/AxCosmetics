@@ -60,6 +60,15 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
         }
     }
 
+    public void updateDataFrom(User user) {
+        this.cosmetics.clear();
+        this.cosmetics.addAll(user.cosmetics);
+        this.priorityEquipped.clear();
+        this.priorityEquipped.putAll(user.priorityEquipped);
+        this.equipped.clear();
+        this.equipped.putAll(user.equipped);
+    }
+
     @Override
     public int id() {
         return this.id;

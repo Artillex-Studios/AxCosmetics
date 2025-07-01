@@ -87,7 +87,10 @@ public final class UserRepository implements com.artillexstudios.axcosmetics.api
                 ((com.artillexstudios.axcosmetics.user.User) user).player(onlinePlayer);
                 this.idLoadedUsers.put(onlinePlayer.getEntityId(), user);
             }
-            return CompletableFuture.completedFuture(user);
+            return this.accessor.loadUser(uuid).thenApply(newUser -> {
+                ((com.artillexstudios.axcosmetics.user.User) user).updateDataFrom(newUser);
+                return user;
+            });
         }
 
         return this.getUser(uuid, LoadContext.FULL);
