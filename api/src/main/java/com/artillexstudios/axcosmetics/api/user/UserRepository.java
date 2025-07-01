@@ -13,7 +13,9 @@ public interface UserRepository {
 
     User getUserIfLoadedImmediately(int id);
 
-    CompletableFuture<User> loadUser(UUID uuid) throws UserAlreadyLoadedException;
+    CompletableFuture<User> asyncLoadUser(UUID uuid) throws UserAlreadyLoadedException;
+
+    User joinUser(UUID uuid);
 
     CompletableFuture<User> getUser(UUID uuid, LoadContext loadContext);
 

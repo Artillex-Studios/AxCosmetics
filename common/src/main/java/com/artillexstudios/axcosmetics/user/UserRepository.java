@@ -28,6 +28,10 @@ public final class UserRepository implements com.artillexstudios.axcosmetics.api
             .expireAfterAccess(5, TimeUnit.MINUTES)
             .maximumSize(200)
             .build();
+    private final Cache<UUID, User> joiningUsers = Caffeine.newBuilder()
+            .expireAfterAccess(10, TimeUnit.SECONDS)
+            .maximumSize(200)
+            .build();
 
     public UserRepository(DatabaseAccessor accessor) {
         this.accessor = accessor;
@@ -69,15 +73,15 @@ public final class UserRepository implements com.artillexstudios.axcosmetics.api
     }
 
     @Override
-    public CompletableFuture<User> loadUser(UUID uuid) throws UserAlreadyLoadedException {
-        if (this.loadedUsers.containsKey(uuid)) {
+    public CompletableFuture<User> asyncLoadUser(UUID uuid) throws UserAlreadyLoadedException {
+        if (this.loadedUsers.containsKey(uuid) || this.joiningUsers.asMap().containsKey(uuid)) {
             throw new UserAlreadyLoadedException();
         }
 
         User user = this.tempUsers.getIfPresent(uuid);
         if (user != null) {
             this.tempUsers.invalidate(uuid);
-            this.loadedUsers.put(uuid, user);
+            this.joiningUsers.put(uuid, user);
             Player onlinePlayer = Bukkit.getPlayer(uuid);
             if (onlinePlayer != null) {
                 ((com.artillexstudios.axcosmetics.user.User) user).player(onlinePlayer);
@@ -87,6 +91,17 @@ public final class UserRepository implements com.artillexstudios.axcosmetics.api
         }
 
         return this.getUser(uuid, LoadContext.FULL);
+    }
+
+    @Override
+    public User joinUser(UUID uuid) {
+        User user = this.joiningUsers.getIfPresent(uuid);
+        if (user == null) {
+            return null;
+        }
+
+        this.loadedUsers.put(uuid, user);
+        return user;
     }
 
     @Override
@@ -106,7 +121,7 @@ public final class UserRepository implements com.artillexstudios.axcosmetics.api
             CompletableFuture<User> future = this.accessor.loadUser(uuid).thenApply(loaded -> {
                 User temp;
                 if (loadContext == LoadContext.FULL) {
-                    temp = this.loadedUsers.putIfAbsent(uuid, loaded);
+                    temp = this.joiningUsers.asMap().putIfAbsent(uuid, loaded);
                 } else {
                     temp = this.tempUsers.asMap().putIfAbsent(uuid, loaded);
                 }
