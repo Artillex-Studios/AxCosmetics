@@ -86,7 +86,7 @@ public class AxCosmeticsCommand {
                                                 return;
                                             }
 
-                                            Cosmetic<?> cosmetic = cosmeticBuilder.first().apply(user, new CosmeticData(0, 0, 0, System.currentTimeMillis()), cosmeticBuilder.second());
+                                            Cosmetic<?> cosmetic = cosmeticBuilder.first().apply(user, new CosmeticData(0, 0, 0, System.currentTimeMillis(), false), cosmeticBuilder.second());
                                             if (cosmetic == null) {
                                                 System.out.println("Null cosmetic!");
                                                 return;
@@ -112,7 +112,7 @@ public class AxCosmeticsCommand {
 
                                                     playerFuture.thenAccept(player -> {
                                                         AxCosmeticsAPI.instance().getUser(player).thenAccept(user -> {
-                                                            Cosmetic<?> cosmetic = cosmeticBuilder.first().apply(user, new CosmeticData(0, 0, 0, System.currentTimeMillis()), cosmeticBuilder.second());
+                                                            Cosmetic<?> cosmetic = cosmeticBuilder.first().apply(user, new CosmeticData(0, 0, 0, System.currentTimeMillis(), false), cosmeticBuilder.second());
 
                                                             user.addCosmetic(cosmetic).thenRun(() -> {
                                                                 MessageUtils.sendMessage(sender, Language.prefix, Language.give,
@@ -269,7 +269,7 @@ public class AxCosmeticsCommand {
                                                         return;
                                                     }
 
-                                                    Cosmetic<?> cosmetic = fetch1.apply(user, new CosmeticData(0, 0, 0, Instant.ofEpochSecond(data.time).toEpochMilli()), fetch);
+                                                    Cosmetic<?> cosmetic = fetch1.apply(user, new CosmeticData(0, 0, 0, Instant.ofEpochSecond(data.time).toEpochMilli(), false), fetch);
                                                     user.addCosmetic(cosmetic);
                                                 });
                                             }
@@ -290,7 +290,7 @@ public class AxCosmeticsCommand {
                                                         return;
                                                     }
 
-                                                    Cosmetic<?> cosmetic = fetch1.apply(user, new CosmeticData(0, 0, 0, System.currentTimeMillis()), fetch);
+                                                    Cosmetic<?> cosmetic = fetch1.apply(user, new CosmeticData(0, 0, 0, System.currentTimeMillis(), false), fetch);
                                                     user.addCosmetic(cosmetic);
                                                 }).exceptionally(throwable -> {
                                                     LogUtils.error("Error occurred!", throwable);

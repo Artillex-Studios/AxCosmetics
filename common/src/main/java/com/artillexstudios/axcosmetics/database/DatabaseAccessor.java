@@ -130,13 +130,13 @@ public final class DatabaseAccessor {
             }
 
             Number cosmeticId = this.cosmeticInsert.create()
-                    .execute(user.id(), cosmetic.config().id(), edition, cosmetic.data().color(), cosmetic.data().timeStamp(), false);
+                    .execute(user.id(), cosmetic.config().id(), edition, cosmetic.data().color(), cosmetic.data().timeStamp(), false, cosmetic.data().permission());
 
             if (Config.debug) {
                 LogUtils.debug("Inserting cosmetic: {}, id: {}, edition: {}, user: {}", cosmetic, cosmetic, edition, user);
             }
 
-            cosmetic.data(new CosmeticData(cosmeticId.intValue(), edition, cosmetic.data().color(), cosmetic.data().timeStamp()));
+            cosmetic.data(new CosmeticData(cosmeticId.intValue(), edition, cosmetic.data().color(), cosmetic.data().timeStamp(), cosmetic.data().permission()));
         }, AsyncUtils.executor()).exceptionally(throwable -> {
             LogUtils.error("Failed to run cosmetic insert query!", throwable);
             return null;

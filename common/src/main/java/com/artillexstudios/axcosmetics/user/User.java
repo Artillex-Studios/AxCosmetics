@@ -56,7 +56,7 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
                 continue;
             }
 
-            Cosmetic<CosmeticConfig> cosmetic = AxCosmeticsAPI.instance().createCosmetic(this, userDTO.cosmeticTypeId(), new CosmeticData(userDTO.cosmeticId(), userDTO.counter(), userDTO.color(), userDTO.timeStamp()));
+            Cosmetic<CosmeticConfig> cosmetic = AxCosmeticsAPI.instance().createCosmetic(this, userDTO.cosmeticTypeId(), new CosmeticData(userDTO.cosmeticId(), userDTO.counter(), userDTO.color(), userDTO.timeStamp(), userDTO.permission()));
             if (cosmetic == null) {
                 LogUtils.warn("Encountered unknown cosmetic with data: {}!", userDTO);
                 continue;
@@ -318,6 +318,10 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
 
                 // Remove cosmetics that the user doesn't have permissions for
                 for (Cosmetic<?> cosmetic : matching) {
+                    if (!cosmetic.data().permission()) {
+                        continue;
+                    }
+
                     if (Config.debug) {
                         LogUtils.debug("Deleting cosmetic {}", cosmetic);
                     }
@@ -347,7 +351,7 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
             if (Config.debug) {
                 LogUtils.debug("Adding cosmetic!");
             }
-            Cosmetic<?> cosmetic = fetch1.apply(this, new CosmeticData(0, 0, 0, System.currentTimeMillis()), cosmeticConfig);
+            Cosmetic<?> cosmetic = fetch1.apply(this, new CosmeticData(0, 0, 0, System.currentTimeMillis(), true), cosmeticConfig);
             this.addCosmetic(cosmetic);
         }
     }
