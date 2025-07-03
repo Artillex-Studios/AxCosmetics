@@ -210,6 +210,7 @@ public class AxCosmeticsCommand {
 
                                         for (String key : configuration.keys()) {
                                             String slot = configuration.getString(key + ".slot");
+                                            String permission = configuration.getString(key + ".permission");
                                             permissions.add(Pair.of(key, configuration.getString(key + ".permission")));
                                             if (slot.equalsIgnoreCase("backpack")) {
                                                 newConfig.set(key + ".slot", "backpack");
@@ -217,11 +218,11 @@ public class AxCosmeticsCommand {
                                                 newConfig.set(key + ".height", 1.5);
                                                 String material = configuration.getString(key + ".item.material");
                                                 String name = configuration.getString(key + ".item.name");
-                                                Integer customModelData = configuration.getInteger(key + ".item.custom-model-data");
+                                                Integer customModelData = configuration.getInteger(key + ".item.model-data");
 
                                                 String firstPersonMaterial = configuration.getString(key + ".firstperson-item.material");
                                                 String firstPersonName = configuration.getString(key + ".firstperson-item.name");
-                                                Integer firstPersonCustomModelData = configuration.getInteger(key + ".firstperson-item.custom-model-data");
+                                                Integer firstPersonCustomModelData = configuration.getInteger(key + ".firstperson-item.model-data");
 
                                                 newConfig.set(key + ".item-stack.material", material);
                                                 newConfig.set(key + ".item-stack.name", name);
@@ -229,6 +230,9 @@ public class AxCosmeticsCommand {
                                                 newConfig.set(key + ".first-person-item-stack.material", firstPersonMaterial);
                                                 newConfig.set(key + ".first-person-item-stack.name", firstPersonName);
                                                 newConfig.set(key + ".first-person-item-stack.custom-model-data", firstPersonCustomModelData);
+                                                if (permission != null && !permission.isBlank()) {
+                                                    newConfig.set(key + ".permission", permission);
+                                                }
                                             } else if (slot.equalsIgnoreCase("HELMET")) {
                                                 newConfig.set(key + ".slot", "helmet");
                                                 newConfig.set(key + ".type", "armor");
@@ -238,6 +242,9 @@ public class AxCosmeticsCommand {
                                                 newConfig.set(key + ".item-stack.material", material);
                                                 newConfig.set(key + ".item-stack.name", name);
                                                 newConfig.set(key + ".item-stack.custom-model-data", customModelData);
+                                                if (permission != null && !permission.isBlank()) {
+                                                    newConfig.set(key + ".permission", permission);
+                                                }
                                             } else {
                                                 sender.sendMessage("Don't know how to convert slot: " + slot);
                                             }
