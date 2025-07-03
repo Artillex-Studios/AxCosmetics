@@ -54,7 +54,10 @@ public final class AxCosmeticsPlugin extends AxPlugin {
     @Override
     public void dependencies(DependencyManagerWrapper manager) {
         manager.dependency("com{}h2database:h2:2.3.232");
+        manager.dependency("dev{}jorel:commandapi-bukkit-shade:10.1.0");
+
         manager.relocate("org{}h2", "com.artillexstudios.axcosmetics.libs.h2");
+        manager.relocate("dev{}jorel{}commandapi", "com.artillexstudios.axcosmetics.libs.commandapi");
     }
 
     @Override

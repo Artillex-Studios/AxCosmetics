@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("maven-publish")
     id("com.gradleup.shadow") version "9.0.0-beta15"
 }
 
@@ -26,16 +27,17 @@ allprojects {
 subprojects {
     apply {
         plugin("java")
+        plugin("maven-publish")
         plugin("com.gradleup.shadow")
     }
 
     dependencies {
-        implementation("com.artillexstudios.axapi:axapi:1.4.722:all")
-        implementation("dev.jorel:commandapi-bukkit-shade:10.0.0")
+        implementation("com.artillexstudios.axapi:axapi:1.4.720:all")
         implementation("dev.triumphteam:triumph-gui:3.1.12")
         compileOnly("com.github.ben-manes.caffeine:caffeine:3.2.0")
         compileOnly("com.artillexstudios.axvanish:axvanish:1.0.0:all")
         compileOnly("org.spigotmc:spigot-api:1.21-R0.1-SNAPSHOT")
+        compileOnly("dev.jorel:commandapi-bukkit-shade:10.1.0")
         compileOnly("org.apache.commons:commons-lang3:3.14.0")
         compileOnly("me.clip:placeholderapi:2.11.6")
         compileOnly("commons-io:commons-io:2.16.1")
