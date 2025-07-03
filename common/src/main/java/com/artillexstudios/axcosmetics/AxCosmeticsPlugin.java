@@ -7,6 +7,7 @@ import com.artillexstudios.axapi.database.impl.H2DatabaseType;
 import com.artillexstudios.axapi.database.impl.MySQLDatabaseType;
 import com.artillexstudios.axapi.database.impl.SQLiteDatabaseType;
 import com.artillexstudios.axapi.dependencies.DependencyManagerWrapper;
+import com.artillexstudios.axapi.metrics.AxMetrics;
 import com.artillexstudios.axapi.packet.PacketEvents;
 import com.artillexstudios.axapi.packetentity.meta.EntityMetaFactory;
 import com.artillexstudios.axapi.utils.AsyncUtils;
@@ -42,6 +43,7 @@ import org.bukkit.entity.EntityType;
 
 public final class AxCosmeticsPlugin extends AxPlugin {
     private static AxCosmeticsPlugin instance;
+    private AxMetrics metrics;
     private UserRepository userRepository;
     private CosmeticConfigTypes cosmeticConfigTypes;
     private CosmeticTypes cosmeticTypes;
@@ -128,6 +130,8 @@ public final class AxCosmeticsPlugin extends AxPlugin {
         if (Config.listenToRidePackets) {
             PacketEvents.INSTANCE.addListener(new RidePacketListener());
         }
+        this.metrics = new AxMetrics(this, 48);
+        this.metrics.start();
     }
 
     @Override
@@ -135,6 +139,7 @@ public final class AxCosmeticsPlugin extends AxPlugin {
         AxCosmeticsCommand.disable();
         AsyncUtils.stop();
         this.handler.close();
+        this.metrics.cancel();
     }
 
     public static AxCosmeticsPlugin instance() {
