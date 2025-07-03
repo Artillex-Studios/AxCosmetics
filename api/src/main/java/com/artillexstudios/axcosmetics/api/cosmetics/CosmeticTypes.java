@@ -19,5 +19,9 @@ public interface CosmeticTypes {
 
     Collection<TriFunction<User, CosmeticData, ?, Cosmetic<?>>> registered();
 
+    /**
+     * Get the names of the registered cosmetictypes.
+     * @return An immutable set of the names of the registered cosmetictypes.
+     */
     Set<String> names();
 }

@@ -72,7 +72,7 @@ public final class LegacyFirstPersonBackpackCosmetic extends FirstPersonBackpack
             areaEffectCloudMeta.point(true);
             areaEffectCloudMeta.invisible(true);
             areaEffectCloudMeta.radius(0.0f);
-            areaEffectCloudMeta.particle(new ParticleData<>(ParticleTypes.BLOCK, new IntegerParticleOption(0)));
+            areaEffectCloudMeta.particle(new ParticleData<>(ParticleTypes.BLOCK, new IntegerParticleOption(0))); // AIR data
             packetEntity.setVisibleByDefault(false);
             packetEntity.show(this.player);
             packetEntity.spawn();
