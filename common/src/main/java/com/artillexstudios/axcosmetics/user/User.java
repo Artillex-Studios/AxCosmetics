@@ -6,10 +6,12 @@ import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
 import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
+import com.artillexstudios.axcosmetics.api.event.UserLoadEvent;
 import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.database.DatabaseAccessor;
 import com.artillexstudios.axcosmetics.database.dto.UserDTO;
 import org.apache.commons.lang3.function.TriFunction;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.Nullable;
@@ -37,13 +39,13 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
     private OfflinePlayer offlinePlayer;
     private Player onlinePlayer;
 
-    // TODO: UserLoadEvent
     public User(int id, OfflinePlayer offlinePlayer, List<UserDTO> userDTOS, DatabaseAccessor accessor) {
         this.id = id;
         this.offlinePlayer = offlinePlayer;
         this.dtos = new ArrayList<>(userDTOS);
         this.accessor = accessor;
         this.createCosmetics();
+        Bukkit.getPluginManager().callEvent(new UserLoadEvent(this));
     }
 
     private void createCosmetics() {
