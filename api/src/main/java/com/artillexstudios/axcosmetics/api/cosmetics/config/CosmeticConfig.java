@@ -2,7 +2,9 @@ package com.artillexstudios.axcosmetics.api.cosmetics.config;
 
 import com.artillexstudios.axapi.config.adapters.ConfigurationGetter;
 import com.artillexstudios.axapi.config.adapters.TypeAdapterHolder;
+import com.artillexstudios.axapi.items.WrappedItemStack;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
+import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
 import com.artillexstudios.axcosmetics.api.exception.MissingConfigurationOptionException;
 
@@ -72,6 +74,8 @@ public abstract class CosmeticConfig implements ConfigurationGetter {
     public int id() {
         return this.id;
     }
+
+    public abstract WrappedItemStack guiItem(CosmeticData data);
 
     public void id(int id) {
         if (this.id != null) {

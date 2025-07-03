@@ -54,7 +54,7 @@ public final class LegacyFirstPersonBackpackCosmetic extends FirstPersonBackpack
         this.player.getLocation(this.location);
 
         this.entity = NMSHandlers.getNmsHandler().createEntity(EntityType.ARMOR_STAND, this.location);
-        this.entity.setItem(EquipmentSlot.HELMET, this.config().itemStack(this.data()));
+        this.entity.setItem(EquipmentSlot.HELMET, this.config().itemStack());
         ArmorStandMeta meta = (ArmorStandMeta) this.entity.meta();
         meta.invisible(true);
         meta.marker(true);

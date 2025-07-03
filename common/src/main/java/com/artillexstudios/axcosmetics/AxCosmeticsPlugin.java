@@ -21,6 +21,7 @@ import com.artillexstudios.axcosmetics.cosmetics.CosmeticSlots;
 import com.artillexstudios.axcosmetics.cosmetics.CosmeticTicker;
 import com.artillexstudios.axcosmetics.cosmetics.CosmeticTypes;
 import com.artillexstudios.axcosmetics.cosmetics.config.ArmorCosmeticConfig;
+import com.artillexstudios.axcosmetics.cosmetics.config.BackpackConfig;
 import com.artillexstudios.axcosmetics.cosmetics.config.CosmeticConfigLoader;
 import com.artillexstudios.axcosmetics.cosmetics.config.CosmeticConfigTypes;
 import com.artillexstudios.axcosmetics.cosmetics.config.CosmeticConfigs;
@@ -28,6 +29,7 @@ import com.artillexstudios.axcosmetics.cosmetics.config.FirstPersonBackpackConfi
 import com.artillexstudios.axcosmetics.cosmetics.type.ArmorCosmetic;
 import com.artillexstudios.axcosmetics.cosmetics.type.InteractionFirstPersonBackpackCosmetic;
 import com.artillexstudios.axcosmetics.cosmetics.type.LegacyFirstPersonBackpackCosmetic;
+import com.artillexstudios.axcosmetics.cosmetics.type.NonFirstPersonBackpackCosmetic;
 import com.artillexstudios.axcosmetics.database.DatabaseAccessor;
 import com.artillexstudios.axcosmetics.entitymeta.InteractionMeta;
 import com.artillexstudios.axcosmetics.integrations.AxVanishIntegration;
@@ -103,13 +105,15 @@ public final class AxCosmeticsPlugin extends AxPlugin {
         AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("main_hand"));
         AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("off_hand"));
         AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("backpack"));
-        // TODO: Maybe non-first-person backpacks?
-        AxCosmeticsAPI.instance().cosmeticConfigTypes().register("backpack", FirstPersonBackpackConfig::new);
-        AxCosmeticsAPI.instance().cosmeticConfigTypes().register("legacy-backpack", FirstPersonBackpackConfig::new);
+
+        AxCosmeticsAPI.instance().cosmeticConfigTypes().register("first-person-backpack", FirstPersonBackpackConfig::new);
+        AxCosmeticsAPI.instance().cosmeticConfigTypes().register("legacy-first-person-backpack", FirstPersonBackpackConfig::new);
+        AxCosmeticsAPI.instance().cosmeticConfigTypes().register("backpack", BackpackConfig::new);
         AxCosmeticsAPI.instance().cosmeticConfigTypes().register("armor", ArmorCosmeticConfig::new);
 
-        AxCosmeticsAPI.instance().cosmeticTypes().register("backpack", InteractionFirstPersonBackpackCosmetic::new);
-        AxCosmeticsAPI.instance().cosmeticTypes().register("legacy-backpack", LegacyFirstPersonBackpackCosmetic::new);
+        AxCosmeticsAPI.instance().cosmeticTypes().register("first-person-backpack", InteractionFirstPersonBackpackCosmetic::new);
+        AxCosmeticsAPI.instance().cosmeticTypes().register("legacy-first-person-backpack", LegacyFirstPersonBackpackCosmetic::new);
+        AxCosmeticsAPI.instance().cosmeticTypes().register("backpack", NonFirstPersonBackpackCosmetic::new);
         AxCosmeticsAPI.instance().cosmeticTypes().register("armor", ArmorCosmetic::new);
     }
 

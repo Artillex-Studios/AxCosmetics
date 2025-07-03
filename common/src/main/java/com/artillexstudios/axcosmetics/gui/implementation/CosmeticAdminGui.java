@@ -10,8 +10,6 @@ import com.artillexstudios.axcosmetics.AxCosmeticsPlugin;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.config.Language;
-import com.artillexstudios.axcosmetics.cosmetics.type.ArmorCosmetic;
-import com.artillexstudios.axcosmetics.cosmetics.type.FirstPersonBackpackCosmetic;
 import com.artillexstudios.axcosmetics.gui.GuiBase;
 import com.artillexstudios.axcosmetics.utils.FileUtils;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -48,14 +46,7 @@ public class CosmeticAdminGui extends GuiBase {
 
         MessageUtils.sendMessage(player, Language.prefix, Language.adminGuiMessage);
         for (Cosmetic<?> cosmetic : this.other.getCosmetics()) {
-            WrappedItemStack stack;
-            if (cosmetic instanceof FirstPersonBackpackCosmetic backpackCosmetic) {
-                stack = backpackCosmetic.config().itemStack(cosmetic.data()).copy();
-            } else if (cosmetic instanceof ArmorCosmetic armorCosmetic) {
-                stack = armorCosmetic.config().itemStack(cosmetic.data()).copy();
-            } else {
-                continue;
-            }
+            WrappedItemStack stack = cosmetic.config().guiItem(cosmetic.data());
 
             if (this.other.isEquipped(cosmetic)) {
                 stack.set(DataComponents.enchantmentGlintOverride(), true);

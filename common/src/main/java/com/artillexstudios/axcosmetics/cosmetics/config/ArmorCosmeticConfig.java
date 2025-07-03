@@ -19,6 +19,11 @@ public final class ArmorCosmeticConfig extends CosmeticConfig {
         super(name, config);
     }
 
+    @Override
+    public WrappedItemStack guiItem(CosmeticData data) {
+        return this.itemStack(data);
+    }
+
     public EquipmentSlot equipmentSlot() {
         return switch (this.slot().name()) {
             case "helmet" -> EquipmentSlot.HELMET;

@@ -9,6 +9,7 @@ import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.config.Config;
+import com.artillexstudios.axcosmetics.cosmetics.type.BackpackCosmetic;
 import com.artillexstudios.axcosmetics.cosmetics.type.FirstPersonBackpackCosmetic;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -38,13 +39,17 @@ public final class RidePacketListener extends PacketListener {
                 LogUtils.debug("Passenger packet fixing, receiver: {}, user: {}", receiver, user);
             }
             for (Cosmetic<?> equippedCosmetic : user.getEquippedCosmetics()) {
-                if (!(equippedCosmetic instanceof FirstPersonBackpackCosmetic cosmetic)) {
+                if (!(equippedCosmetic instanceof BackpackCosmetic cosmetic)) {
                     continue;
                 }
 
                 if (receiver == user) {
+                    if (!(equippedCosmetic instanceof FirstPersonBackpackCosmetic firstPersonCosmetic)) {
+                        continue;
+                    }
+
                     // First person cosmetic
-                    Integer interactionEntityId = cosmetic.firstPersonRiderId();
+                    Integer interactionEntityId = firstPersonCosmetic.firstPersonRiderId();
                     if (interactionEntityId == null) {
                         continue;
                     }
