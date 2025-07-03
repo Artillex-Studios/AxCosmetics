@@ -5,6 +5,7 @@ import com.artillexstudios.axapi.config.YamlConfiguration;
 import com.artillexstudios.axapi.database.handler.ListHandler;
 import com.artillexstudios.axapi.database.handler.SimpleHandler;
 import com.artillexstudios.axapi.database.handler.TransformerHandler;
+import com.artillexstudios.axapi.database.impl.MySQLDatabaseType;
 import com.artillexstudios.axapi.libs.snakeyaml.DumperOptions;
 import com.artillexstudios.axapi.scheduler.Scheduler;
 import com.artillexstudios.axapi.utils.MessageUtils;
@@ -18,6 +19,7 @@ import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.config.Language;
+import com.artillexstudios.axcosmetics.gui.implementation.CosmeticAdminGui;
 import com.artillexstudios.axcosmetics.gui.implementation.CosmeticsGui;
 import com.artillexstudios.axcosmetics.utils.FileUtils;
 import dev.jorel.commandapi.CommandAPI;
@@ -154,6 +156,27 @@ public class AxCosmeticsCommand {
                                         MessageUtils.sendMessage(sender, Language.prefix, Language.reload.fail, Placeholder.unparsed("time", Long.toString((System.nanoTime() - start) / 1_000_000)), Placeholder.unparsed("files", String.join(", ", failed)));
                                     }
                                 })
+                        ).then(new LiteralArgument("view")
+                                .withPermission("axcosmetics.command.admin.view")
+                                .then(new AsyncOfflinePlayerArgument("player")
+                                        .executesPlayer((sender, args) -> {
+                                            User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender.getUniqueId());
+                                            if (user == null) {
+                                                return;
+                                            }
+
+                                            CompletableFuture<OfflinePlayer> playerFuture = args.getUnchecked("player");
+                                            if (playerFuture == null) {
+                                                return;
+                                            }
+
+                                            playerFuture.thenAccept(offlinePlayer -> {
+                                                AxCosmeticsAPI.instance().getUser(offlinePlayer).thenAccept(otherUser -> {
+                                                   new CosmeticAdminGui(user, otherUser).open();
+                                                });
+                                            });
+                                        })
+                                )
                         ).then(new LiteralArgument("convert")
                                 .withPermission("axcosmetics.command.admin.convert")
                                 .executes((sender, args) -> {
@@ -225,6 +248,10 @@ public class AxCosmeticsCommand {
                                     LogUtils.warn("Permissions: {}", permissions);
                                     List<CompletableFuture<?>> completableFutures = AxCosmeticsPlugin.instance().configLoader().loadFile(convertedPath.toFile());
                                     CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenRunAsync(() -> {
+                                        if (!(Config.database.type instanceof MySQLDatabaseType)) {
+                                            return;
+                                        }
+
                                         sender.sendMessage("Converted cosmetics! Starting user data conversion!");
 
                                         for (Pair<String, String> permission : permissions) {

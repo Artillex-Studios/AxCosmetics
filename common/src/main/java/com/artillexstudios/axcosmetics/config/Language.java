@@ -33,6 +33,7 @@ public final class Language implements ConfigurationPart {
     public static String give = "<#00FF00>You have successfully given <cosmetic> <edition> to <player>!";
     public static String receive = "<#00FF00>You were given <cosmetic> <edition>!";
     public static String cosmeticNotFound = "<#FF0000>No cosmetic found with type <type>!";
+    public static String adminGuiMessage = "<#FF0000>Shift+left click on a cosmetic to delete it!";
 
     @Comment("Do not touch!")
     public static int configVersion = 1;
