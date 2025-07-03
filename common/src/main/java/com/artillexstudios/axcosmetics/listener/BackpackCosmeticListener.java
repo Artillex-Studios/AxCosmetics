@@ -7,6 +7,7 @@ import com.artillexstudios.axcosmetics.api.user.User;
 import org.bukkit.GameMode;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -41,15 +42,22 @@ public final class BackpackCosmeticListener implements Listener {
     }
 
     @EventHandler
+    public void onPlayerDeathEvent(PlayerDeathEvent event) {
+        User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(event.getEntity().getUniqueId());
+        if (user == null) {
+            return;
+        }
+
+        user.hideSlot(CosmeticSlots.BACKPACK);
+    }
+
+    @EventHandler
     public void onPlayerRespawnEvent(PlayerRespawnEvent event) {
         User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(event.getPlayer().getUniqueId());
         if (user == null) {
             return;
         }
 
-        user.hideSlot(CosmeticSlots.BACKPACK);
-        Scheduler.get().runLater(() -> {
-            user.showSlot(CosmeticSlots.BACKPACK);
-        }, 1L);
+        user.showSlot(CosmeticSlots.BACKPACK);
     }
 }
