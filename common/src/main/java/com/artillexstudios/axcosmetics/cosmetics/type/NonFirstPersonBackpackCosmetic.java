@@ -69,10 +69,7 @@ public final class NonFirstPersonBackpackCosmetic extends Cosmetic<BackpackConfi
         this.player.getLocation(this.location);
         float yaw = this.location.getYaw();
 
-        this.entity.rotate(yaw, 0);
-        if (this.tick % 10 == 0) {
-            this.entity.rotateHead(yaw);
-        }
+        this.entity.rotateHead(yaw);
         if (Config.forceRidePackets) {
             this.entity.ride(this.player.getEntityId());
         }

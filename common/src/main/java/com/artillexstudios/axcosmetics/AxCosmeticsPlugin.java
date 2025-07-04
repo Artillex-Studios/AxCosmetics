@@ -42,8 +42,6 @@ import com.artillexstudios.axcosmetics.user.UserRepository;
 import com.artillexstudios.axcosmetics.utils.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionDefault;
 
 public final class AxCosmeticsPlugin extends AxPlugin {
     private static AxCosmeticsPlugin instance;
@@ -60,7 +58,7 @@ public final class AxCosmeticsPlugin extends AxPlugin {
     @Override
     public void dependencies(DependencyManagerWrapper manager) {
         manager.dependency("com{}h2database:h2:2.3.232");
-        manager.dependency("dev{}jorel:commandapi-bukkit-shade:10.1.0");
+        manager.dependency("dev{}jorel:commandapi-bukkit-shade:10.1.0", true);
 
         manager.relocate("org{}h2", "com.artillexstudios.axcosmetics.libs.h2");
         manager.relocate("dev{}jorel{}commandapi", "com.artillexstudios.axcosmetics.libs.commandapi");

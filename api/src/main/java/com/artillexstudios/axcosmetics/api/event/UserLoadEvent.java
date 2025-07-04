@@ -13,6 +13,7 @@ public final class UserLoadEvent extends Event {
     private final User user;
 
     public UserLoadEvent(User user) {
+        super(true);
         this.user = user;
     }
 
