@@ -71,6 +71,11 @@ public class AxCosmeticsCommand {
         }
 
         new CommandTree("cosmetics")
+                .withPermission("axcosmetics.command.gui")
+                .executesPlayer((sender, args) -> {
+                    User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender);
+                    new CosmeticsGui(user).open();
+                })
                 .then(new LiteralArgument("gui")
                         .withPermission("axcosmetics.command.gui")
                         .executesPlayer((sender, args) -> {
