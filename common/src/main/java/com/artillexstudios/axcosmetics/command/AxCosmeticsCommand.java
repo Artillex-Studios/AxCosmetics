@@ -62,6 +62,7 @@ public class AxCosmeticsCommand {
     public static void register() {
         for (String alias : Config.aliases) {
             new CommandAPICommand(alias)
+                    .withPermission("axcosmetics.command.gui")
                     .executesPlayer((sender, args) -> {
                         User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender);
                         new CosmeticsGui(user).open();
@@ -71,6 +72,7 @@ public class AxCosmeticsCommand {
 
         new CommandTree("cosmetics")
                 .then(new LiteralArgument("gui")
+                        .withPermission("axcosmetics.command.gui")
                         .executesPlayer((sender, args) -> {
                             User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender);
                             new CosmeticsGui(user).open();
@@ -98,7 +100,7 @@ public class AxCosmeticsCommand {
                                         })
                                 )
                         ).then(new LiteralArgument("give")
-                                .withPermission("axcosmetics.command.admin.equip")
+                                .withPermission("axcosmetics.command.admin.give")
                                 .then(new AsyncOfflinePlayerArgument("player")
                                         .then(CosmeticArgumentType.cosmetic("cosmetic")
                                                 .executes((sender, args) -> {

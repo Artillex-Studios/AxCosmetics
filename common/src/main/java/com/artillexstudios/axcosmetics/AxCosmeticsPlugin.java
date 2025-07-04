@@ -42,6 +42,8 @@ import com.artillexstudios.axcosmetics.user.UserRepository;
 import com.artillexstudios.axcosmetics.utils.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 
 public final class AxCosmeticsPlugin extends AxPlugin {
     private static AxCosmeticsPlugin instance;

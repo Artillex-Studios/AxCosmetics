@@ -6,7 +6,7 @@ helmet:
     custom-model-data: 1002
 backpack:
   slot: "backpack"
-  type: "backpack"
+  type: "first-person-backpack"
   height: 1.5
   item-stack:
     material: "paper"

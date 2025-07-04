@@ -3,3 +3,7 @@ main: "com.artillexstudios.axcosmetics.AxCosmeticsPlugin"
 version: "${version}"
 api-version: "1.20"
 folia-supported: true
+
+permissions:
+  "axcosmetics.command.gui":
+    default: true
