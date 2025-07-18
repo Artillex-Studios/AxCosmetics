@@ -1,5 +1,6 @@
 package com.artillexstudios.axcosmetics.cosmetics;
 
+import com.artillexstudios.axapi.utils.UncheckedUtils;
 import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
@@ -23,7 +24,7 @@ public class CosmeticTypes implements com.artillexstudios.axcosmetics.api.cosmet
             return;
         }
 
-        this.identifierToCosmeticTypeMap.put(identifier, (TriFunction<User, CosmeticData, ?, Cosmetic<?>>) (Object) function);
+        this.identifierToCosmeticTypeMap.put(identifier, UncheckedUtils.unsafeCast(function));
     }
 
 
@@ -39,7 +40,7 @@ public class CosmeticTypes implements com.artillexstudios.axcosmetics.api.cosmet
 
     @Override
     public @Nullable <T extends CosmeticConfig> TriFunction<User, CosmeticData, T, Cosmetic<T>> fetch(String identifier) {
-        return (TriFunction<User, CosmeticData, T, Cosmetic<T>>) (Object) this.identifierToCosmeticTypeMap.get(identifier);
+        return UncheckedUtils.unsafeCast(this.identifierToCosmeticTypeMap.get(identifier));
     }
 
     @Override

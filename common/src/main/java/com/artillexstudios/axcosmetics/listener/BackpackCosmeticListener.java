@@ -36,9 +36,7 @@ public final class BackpackCosmeticListener implements Listener {
         }
 
         user.hideSlot(CosmeticSlots.BACKPACK);
-        Scheduler.get().runLater(() -> {
-            user.showSlot(CosmeticSlots.BACKPACK);
-        }, 1L);
+        Scheduler.get().runLater(() -> user.showSlot(CosmeticSlots.BACKPACK), 1L);
     }
 
     @EventHandler

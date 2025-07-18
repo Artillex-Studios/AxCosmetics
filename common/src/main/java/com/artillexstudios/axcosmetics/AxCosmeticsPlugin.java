@@ -7,6 +7,7 @@ import com.artillexstudios.axapi.database.impl.H2DatabaseType;
 import com.artillexstudios.axapi.database.impl.MySQLDatabaseType;
 import com.artillexstudios.axapi.database.impl.SQLiteDatabaseType;
 import com.artillexstudios.axapi.dependencies.DependencyManagerWrapper;
+import com.artillexstudios.axapi.gui.configuration.actions.Actions;
 import com.artillexstudios.axapi.metrics.AxMetrics;
 import com.artillexstudios.axapi.packet.PacketEvents;
 import com.artillexstudios.axapi.packetentity.meta.EntityMetaFactory;
@@ -32,6 +33,7 @@ import com.artillexstudios.axcosmetics.cosmetics.type.LegacyFirstPersonBackpackC
 import com.artillexstudios.axcosmetics.cosmetics.type.NonFirstPersonBackpackCosmetic;
 import com.artillexstudios.axcosmetics.database.DatabaseAccessor;
 import com.artillexstudios.axcosmetics.entitymeta.InteractionMeta;
+import com.artillexstudios.axcosmetics.gui.ActionUnequip;
 import com.artillexstudios.axcosmetics.integrations.AxVanishIntegration;
 import com.artillexstudios.axcosmetics.listener.ArmorCosmeticListener;
 import com.artillexstudios.axcosmetics.listener.BackpackCosmeticListener;
@@ -67,12 +69,14 @@ public final class AxCosmeticsPlugin extends AxPlugin {
     @Override
     public void updateFlags() {
         FeatureFlags.PACKET_ENTITY_TRACKER_ENABLED.set(true);
+        FeatureFlags.DEBUG.set(true);
     }
 
     @Override
     public void load() {
         instance = this;
 
+        Actions.INSTANCE.register("unequip", ActionUnequip::new);
         FileUtils.copyFromResource("cosmetics");
         DatabaseTypes.register(new H2DatabaseType("com.artillexstudios.axcosmetics.libs.h2"), true);
         DatabaseTypes.register(new SQLiteDatabaseType());
@@ -140,6 +144,7 @@ public final class AxCosmeticsPlugin extends AxPlugin {
 
     @Override
     public void disable() {
+        this.ticker.cancel();
         AxCosmeticsCommand.disable();
         AsyncUtils.stop();
         this.handler.close();

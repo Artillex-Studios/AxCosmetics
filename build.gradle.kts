@@ -32,7 +32,7 @@ subprojects {
     }
 
     dependencies {
-        implementation("com.artillexstudios.axapi:axapi:1.4.720:all")
+        implementation("com.artillexstudios.axapi:axapi:1.4.742:all")
         implementation("dev.triumphteam:triumph-gui:3.1.12")
         compileOnly("com.github.ben-manes.caffeine:caffeine:3.2.0")
         compileOnly("com.artillexstudios.axvanish:axvanish:1.0.0:all")

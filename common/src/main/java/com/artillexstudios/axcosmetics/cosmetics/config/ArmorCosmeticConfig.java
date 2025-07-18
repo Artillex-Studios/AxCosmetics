@@ -37,7 +37,7 @@ public final class ArmorCosmeticConfig extends CosmeticConfig {
     }
 
     public WrappedItemStack itemStack(CosmeticData data) {
-        return new ItemBuilder((Map<Object, Object>) this.getMap("item-stack"),
+        return new ItemBuilder(this.getMap("item-stack"),
                 Placeholder.unparsed("edition", String.valueOf(data.counter())),
                 Formatter.date("date", ZonedDateTime.ofInstant(Instant.ofEpochMilli(data.timeStamp()), ZoneId.systemDefault()))
         ).wrapped();

@@ -35,7 +35,7 @@ public final class CosmeticTicker {
     }
 
     public void cancel() {
-        if (this.future != null && !this.future.isCancelled()) {
+        if (this.future == null || this.future.isCancelled()) {
             throw new IllegalStateException();
         }
 

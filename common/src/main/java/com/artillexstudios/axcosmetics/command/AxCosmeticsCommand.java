@@ -2,10 +2,20 @@ package com.artillexstudios.axcosmetics.command;
 
 import com.artillexstudios.axapi.AxPlugin;
 import com.artillexstudios.axapi.config.YamlConfiguration;
+import com.artillexstudios.axapi.context.HashMapContext;
 import com.artillexstudios.axapi.database.handler.ListHandler;
 import com.artillexstudios.axapi.database.handler.SimpleHandler;
 import com.artillexstudios.axapi.database.handler.TransformerHandler;
 import com.artillexstudios.axapi.database.impl.MySQLDatabaseType;
+import com.artillexstudios.axapi.gui.inventory.Gui;
+import com.artillexstudios.axapi.gui.inventory.GuiBuilder;
+import com.artillexstudios.axapi.gui.inventory.GuiItem;
+import com.artillexstudios.axapi.gui.inventory.GuiKeys;
+import com.artillexstudios.axapi.gui.inventory.implementation.PaginatedGui;
+import com.artillexstudios.axapi.gui.inventory.provider.implementation.AsyncGuiItemProvider;
+import com.artillexstudios.axapi.gui.inventory.provider.implementation.CachingGuiItemProvider;
+import com.artillexstudios.axapi.items.WrappedItemStack;
+import com.artillexstudios.axapi.items.component.DataComponents;
 import com.artillexstudios.axapi.libs.snakeyaml.DumperOptions;
 import com.artillexstudios.axapi.scheduler.Scheduler;
 import com.artillexstudios.axapi.utils.MessageUtils;
@@ -19,8 +29,7 @@ import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
 import com.artillexstudios.axcosmetics.api.user.User;
 import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.config.Language;
-import com.artillexstudios.axcosmetics.gui.implementation.CosmeticAdminGui;
-import com.artillexstudios.axcosmetics.gui.implementation.CosmeticsGui;
+import com.artillexstudios.axcosmetics.gui.Guis;
 import com.artillexstudios.axcosmetics.utils.FileUtils;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
@@ -28,10 +37,14 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandTree;
 import dev.jorel.commandapi.arguments.AsyncOfflinePlayerArgument;
 import dev.jorel.commandapi.arguments.LiteralArgument;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.apache.commons.lang3.function.TriFunction;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -64,8 +77,9 @@ public class AxCosmeticsCommand {
             new CommandAPICommand(alias)
                     .withPermission("axcosmetics.command.gui")
                     .executesPlayer((sender, args) -> {
-                        User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender);
-                        new CosmeticsGui(user).open();
+                        Gui gui = Guis.GUI.create(sender);
+                        refreshPermissionCosmetics(sender);
+                        gui.open();
                     })
                     .register();
         }
@@ -73,14 +87,16 @@ public class AxCosmeticsCommand {
         new CommandTree("cosmetics")
                 .withPermission("axcosmetics.command.gui")
                 .executesPlayer((sender, args) -> {
-                    User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender);
-                    new CosmeticsGui(user).open();
+                    Gui gui = Guis.GUI.create(sender);
+                    refreshPermissionCosmetics(sender);
+                    gui.open();
                 })
                 .then(new LiteralArgument("gui")
                         .withPermission("axcosmetics.command.gui")
                         .executesPlayer((sender, args) -> {
-                            User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender);
-                            new CosmeticsGui(user).open();
+                            Gui gui = Guis.GUI.create(sender);
+                            refreshPermissionCosmetics(sender);
+                            gui.open();
                         })
                 )
                 .then(new LiteralArgument("admin")
@@ -179,11 +195,81 @@ public class AxCosmeticsCommand {
 
                                             playerFuture.thenAccept(offlinePlayer -> {
                                                 AxCosmeticsAPI.instance().getUser(offlinePlayer).thenAccept(otherUser -> {
-                                                   new CosmeticAdminGui(user, otherUser).open();
+                                                    Guis.ADMIN_GUI.create(sender, HashMapContext.create()
+                                                                    .with(GuiKeys.PLAYER, sender)
+                                                                    .with(Guis.OTHER_PLAYER, otherUser)
+                                                            )
+                                                            .open();
                                                 });
                                             });
                                         })
                                 )
+                        ).then(new LiteralArgument("debug")
+                                .executesPlayer((sender, args) -> {
+                                    User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender.getUniqueId());
+                                    if (user == null) {
+                                        return;
+                                    }
+
+                                    PaginatedGui gui = GuiBuilder.createPaginated()
+                                            .title(ctx -> Component.empty())
+                                            .inventoryType(InventoryType.CHEST)
+                                            .rows(6)
+                                            .withProvider(Cosmetic.class, cosmetic -> {
+                                                return new AsyncGuiItemProvider(new GuiItem(data -> {
+                                                    WrappedItemStack stack = cosmetic.config().guiItem(cosmetic.data());
+                                                    if (user.isEquipped(cosmetic)) {
+                                                        stack.set(DataComponents.enchantmentGlintOverride(), true);
+                                                    }
+
+                                                    return stack;
+                                                }, (ctx, event) -> {
+                                                    Gui inv = ctx.get(GuiKeys.GUI);
+                                                    if (user.isEquipped(cosmetic)) {
+                                                        user.unequipCosmetic(cosmetic);
+                                                        MessageUtils.sendMessage(sender, Language.prefix, Language.unequip, Placeholder.unparsed("cosmetic", cosmetic.config().name()));
+                                                        inv.open();
+                                                    } else {
+                                                        user.equipCosmetic(cosmetic);
+                                                        MessageUtils.sendMessage(sender, Language.prefix, Language.equip, Placeholder.unparsed("cosmetic", cosmetic.config().name()));
+                                                        inv.open();
+                                                    }
+                                                }));
+                                            })
+                                            .build(sender);
+
+                                    GuiItem item = new GuiItem((c) -> WrappedItemStack.wrap(new ItemStack(Material.GRAY_STAINED_GLASS_PANE)));
+                                    for (int i = 0; i < 10; i++) {
+                                        gui.setItem(i, item, CachingGuiItemProvider::new);
+                                    }
+
+                                    for (int i = 45; i < 54; i++) {
+                                        gui.setItem(i, item, CachingGuiItemProvider::new);
+                                    }
+                                    gui.setItem(52, new GuiItem(ctx -> WrappedItemStack.wrap(new ItemStack(Material.ARROW)), (ctx, event) -> {
+                                        Gui inv = ctx.get(GuiKeys.GUI);
+                                        if (!(inv instanceof PaginatedGui paginatedGui)) {
+                                            event.getWhoClicked().sendMessage("Not paginated!");
+                                            return;
+                                        }
+
+                                        if (!paginatedGui.hasNextPage()) {
+                                            event.getWhoClicked().sendMessage("No next page!");
+                                            return;
+                                        }
+
+                                        // TODO: render on page change
+                                        paginatedGui.page(paginatedGui.page() + 1);
+                                        event.getWhoClicked().sendMessage("Next page!");
+                                        paginatedGui.open();
+                                        event.getWhoClicked().sendMessage("Opened!");
+                                    }), CachingGuiItemProvider::new);
+                                    for (Cosmetic<?> cosmetic : user.getCosmetics()) {
+                                        gui.addItem(cosmetic);
+                                    }
+                                    gui.disableAllInteractions();
+                                    gui.open();
+                                })
                         ).then(new LiteralArgument("convert")
                                 .withPermission("axcosmetics.command.admin.convert")
                                 .executes((sender, args) -> {
@@ -215,7 +301,8 @@ public class AxCosmeticsCommand {
                                                 }).build();
                                         configuration.load();
 
-                                        for (String key : configuration.keys()) {
+                                        for (Object objectKey : configuration.keys()) {
+                                            String key = objectKey.toString();
                                             String slot = configuration.getString(key + ".slot");
                                             String permission = configuration.getString(key + ".permission");
                                             permissions.add(Pair.of(key, configuration.getString(key + ".permission")));
@@ -348,6 +435,15 @@ public class AxCosmeticsCommand {
                         )
                 )
                 .register();
+    }
+
+    private static void refreshPermissionCosmetics(Player sender) {
+        if (Config.refreshPermissionCosmeticsOnGuiOpen) {
+            User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender);
+            if (user != null) {
+                user.updatePermissionCosmetics();
+            }
+        }
     }
 
     public record CosmeticConvertData(String uuid, long time) {

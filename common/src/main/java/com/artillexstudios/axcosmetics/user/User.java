@@ -1,5 +1,6 @@
 package com.artillexstudios.axcosmetics.user;
 
+import com.artillexstudios.axapi.utils.UncheckedUtils;
 import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
@@ -104,20 +105,18 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
     @Override
     public @Nullable <T extends CosmeticConfig> Cosmetic<T> getCosmetic(CosmeticSlot slot, boolean owned) {
         if (owned) {
-            return (Cosmetic<T>) this.equipped.get(slot).stream()
-                    .filter(cosmetic -> this.cosmetics.contains(cosmetic))
+            return UncheckedUtils.unsafeCast(this.equipped.get(slot).stream()
+                    .filter(this.cosmetics::contains)
                     .findFirst()
-                    .orElse(null);
+                    .orElse(null));
         } else {
-            return (Cosmetic<T>) this.priorityEquipped.get(slot);
+            return UncheckedUtils.unsafeCast(this.priorityEquipped.get(slot));
         }
     }
 
     @Override
     public <T extends CosmeticConfig> CompletableFuture<?> addCosmetic(Cosmetic<T> cosmetic) {
-        return this.accessor.insertCosmetic(this, cosmetic).thenRun(() -> {
-            this.cosmetics.add(cosmetic);
-        });
+        return this.accessor.insertCosmetic(this, cosmetic).thenRun(() -> this.cosmetics.add(cosmetic));
     }
 
     @Override

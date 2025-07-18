@@ -44,7 +44,8 @@ public final class CosmeticConfigLoader {
         configuration.load();
         List<CompletableFuture<?>> futures = new ArrayList<>();
 
-        for (String key : configuration.keys()) {
+        for (Object objectKey : configuration.keys()) {
+            String key = objectKey.toString();
             String type = configuration.getString(key + ".type");
             if (type == null || type.isBlank()) {
                 LogUtils.warn("Failed to construct cosmetic from key {} due to missing type!", key);
@@ -58,7 +59,7 @@ public final class CosmeticConfigLoader {
             }
 
             try {
-                Map<String, Object> map = (Map<String, Object>) configuration.getMap(key);
+                Map<String, Object> map = configuration.getMap(key);
                 CosmeticConfig cosmeticConfig = cosmeticSupplier.apply(key, map);
                 if (Config.debug) {
                     LogUtils.debug("Loading cosmetic config {} from data: {}!", key, map);

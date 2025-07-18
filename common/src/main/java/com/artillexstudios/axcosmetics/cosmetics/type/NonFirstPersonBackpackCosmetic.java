@@ -24,7 +24,6 @@ public final class NonFirstPersonBackpackCosmetic extends Cosmetic<BackpackConfi
     private Player player;
     private PacketEntity entity;
     private boolean equipped = false;
-    private int tick = 0;
 
     public NonFirstPersonBackpackCosmetic(User user, CosmeticData data, BackpackConfig config) {
         super(user, data, config);
@@ -64,7 +63,6 @@ public final class NonFirstPersonBackpackCosmetic extends Cosmetic<BackpackConfi
             LogUtils.debug("Attempted to tick null player {}!", this.user().player().getName());
             return;
         }
-        this.tick++;
 
         this.player.getLocation(this.location);
         float yaw = this.location.getYaw();
@@ -88,7 +86,6 @@ public final class NonFirstPersonBackpackCosmetic extends Cosmetic<BackpackConfi
         this.equipped = false;
         this.entity.remove();
         this.player = null;
-        this.tick = 0;
     }
 
     @Override

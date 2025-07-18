@@ -18,12 +18,12 @@ public final class BackpackConfig extends CosmeticConfig {
 
     public BackpackConfig(String name, Map<String, Object> config) throws MissingConfigurationOptionException {
         super(name, config);
-        this.itemStack = new ItemBuilder((Map<Object, Object>) this.getMap("item-stack")).wrapped();
+        this.itemStack = new ItemBuilder(this.getMap("item-stack")).wrapped();
     }
 
     @Override
     public WrappedItemStack guiItem(CosmeticData data) {
-        return new ItemBuilder((Map<Object, Object>) this.getMap("item-stack"),
+        return new ItemBuilder(this.getMap("item-stack"),
                 Placeholder.unparsed("edition", String.valueOf(data.counter())),
                 Formatter.date("date", ZonedDateTime.ofInstant(Instant.ofEpochMilli(data.timeStamp()), ZoneId.systemDefault()))
         ).wrapped();

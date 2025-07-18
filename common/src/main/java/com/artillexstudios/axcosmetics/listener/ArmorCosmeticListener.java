@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 
 public final class ArmorCosmeticListener implements Listener {
 
@@ -39,5 +40,18 @@ public final class ArmorCosmeticListener implements Listener {
         if (Config.debug) {
             LogUtils.debug("PlayerInteractEvent - Armor update");
         }
+    }
+
+    @EventHandler
+    public void onPlayerItemHeldEvent(PlayerItemHeldEvent event) {
+        User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(event.getPlayer().getUniqueId());
+        if (user == null) {
+            if (Config.debug) {
+                LogUtils.debug("PlayerItemHeldEvent - user null");
+            }
+            return;
+        }
+
+        CosmeticPacketListener.sendUserArmorUpdate(user, event.getPlayer(), true);
     }
 }

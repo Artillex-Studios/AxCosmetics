@@ -1,5 +1,6 @@
 package com.artillexstudios.axcosmetics.cosmetics.config;
 
+import com.artillexstudios.axapi.utils.UncheckedUtils;
 import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
 import org.jspecify.annotations.Nullable;
@@ -36,7 +37,7 @@ public final class CosmeticConfigTypes implements com.artillexstudios.axcosmetic
 
     @Override
     public <T extends CosmeticConfig> @Nullable BiFunction<String, Map<String, Object>, T> fetch(String identifier) {
-        return (BiFunction<String, Map<String, Object>, T>) this.identifierToCosmeticConfigTypeMap.get(identifier);
+        return UncheckedUtils.unsafeCast(this.identifierToCosmeticConfigTypeMap.get(identifier));
     }
 
     @Override
