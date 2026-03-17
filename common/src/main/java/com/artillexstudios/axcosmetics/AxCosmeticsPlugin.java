@@ -60,10 +60,8 @@ public final class AxCosmeticsPlugin extends AxPlugin {
     @Override
     public void dependencies(DependencyManagerWrapper manager) {
         manager.dependency("com{}h2database:h2:2.3.232");
-        manager.dependency("dev{}jorel:commandapi-bukkit-shade:10.1.0", true);
 
         manager.relocate("org{}h2", "com.artillexstudios.axcosmetics.libs.h2");
-        manager.relocate("dev{}jorel{}commandapi", "com.artillexstudios.axcosmetics.libs.commandapi");
     }
 
     @Override
@@ -84,10 +82,10 @@ public final class AxCosmeticsPlugin extends AxPlugin {
 
         Config.reload();
         Language.reload();
-        AsyncUtils.setup(Config.asyncProcessorPoolSize);
+        FeatureFlags.ASYNC_UTILS_POOL_SIZE.set(Config.asyncProcessorPoolSize);
 
         Config.database.tablePrefix(Config.tablePrefix);
-        this.handler = new DatabaseHandler(this, Config.database);
+        this.handler = new DatabaseHandler(Config.database);
         DatabaseAccessor accessor = new DatabaseAccessor(this.handler);
         this.userRepository = new UserRepository(accessor);
         this.slots = new CosmeticSlots();

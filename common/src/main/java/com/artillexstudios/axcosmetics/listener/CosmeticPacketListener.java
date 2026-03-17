@@ -29,7 +29,7 @@ public final class CosmeticPacketListener extends PacketListener {
     public void onPacketSending(PacketEvent event) {
         if (event.type() == ClientboundPacketTypes.ADD_ENTITY) {
             ClientboundAddEntityWrapper wrapper = new ClientboundAddEntityWrapper(event);
-            User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(wrapper.uuid());
+            User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(wrapper.getUuid());
             if (user == null) {
                 if (Config.debug) {
                     LogUtils.debug("Add entity packet player null!");

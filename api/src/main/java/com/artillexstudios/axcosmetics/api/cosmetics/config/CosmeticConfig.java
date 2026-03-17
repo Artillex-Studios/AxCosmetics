@@ -11,6 +11,7 @@ import com.artillexstudios.axcosmetics.api.exception.MissingConfigurationOptionE
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Represents a possible configuration for a cosmetic.
@@ -87,6 +88,11 @@ public abstract class CosmeticConfig implements ConfigurationGetter {
 
     public String permission() {
         return this.permission;
+    }
+
+    @Override
+    public Set<String> getKeys() {
+        return this.config.keySet();
     }
 
     @Override
