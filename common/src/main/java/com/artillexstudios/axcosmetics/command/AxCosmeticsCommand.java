@@ -22,7 +22,9 @@ import com.artillexstudios.axapi.utils.Pair;
 import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.AxCosmeticsPlugin;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
+import com.artillexstudios.axcosmetics.api.cosmetics.BuildableCosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
+import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticBuilder;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
 import com.artillexstudios.axcosmetics.api.user.User;
@@ -32,7 +34,6 @@ import com.artillexstudios.axcosmetics.gui.Guis;
 import com.artillexstudios.axcosmetics.utils.FileUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
-import org.apache.commons.lang3.function.TriFunction;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -61,19 +62,17 @@ public class AxCosmeticsCommand {
     public void gui(Player sender) {
         Gui gui = Guis.GUI.create(sender);
         refreshPermissionCosmetics(sender);
+        gui.open();
     }
 
     @Subcommand("admin equip")
     @CommandPermission("axcosmetics.command.admin.equip")
-    public void equip(Player sender) {
+    public void equip(Player sender, BuildableCosmeticData<CosmeticConfig> data) {
         User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender.getUniqueId());
-        Pair<TriFunction<User, CosmeticData, CosmeticConfig, Cosmetic<CosmeticConfig>>, CosmeticConfig> cosmeticBuilder = args.getUnchecked("cosmetic");
-        if (cosmeticBuilder == null) {
-            return;
-        }
 
-        Cosmetic<?> cosmetic = cosmeticBuilder.first().apply(user, new CosmeticData(0, 0, 0, System.currentTimeMillis(), false), cosmeticBuilder.second());
+        Cosmetic<?> cosmetic = data.builder().apply(user, new CosmeticData(0, 0, 0, System.currentTimeMillis(), false), data.config());
         if (cosmetic == null) {
+            // TODO: send message
             System.out.println("Null cosmetic!");
             return;
         }
@@ -105,25 +104,18 @@ public class AxCosmeticsCommand {
 
     @Subcommand("admin view")
     @CommandPermission("axcosmetics.command.admin.view")
-    public void view(Player sender) {
+    public void view(Player sender, OfflinePlayer offlinePlayer) {
         User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(sender.getUniqueId());
         if (user == null) {
             return;
         }
 
-        CompletableFuture<OfflinePlayer> playerFuture = args.getUnchecked("player");
-        if (playerFuture == null) {
-            return;
-        }
-
-        playerFuture.thenAccept(offlinePlayer -> {
-            AxCosmeticsAPI.instance().getUser(offlinePlayer).thenAccept(otherUser -> {
-                Guis.ADMIN_GUI.create(sender, HashMapContext.create()
-                                .with(GuiKeys.PLAYER, sender)
-                                .with(Guis.OTHER_PLAYER, otherUser)
-                        )
-                        .open();
-            });
+        AxCosmeticsAPI.instance().getUser(offlinePlayer).thenAccept(otherUser -> {
+            Guis.ADMIN_GUI.create(sender, HashMapContext.create()
+                            .with(GuiKeys.PLAYER, sender)
+                            .with(Guis.OTHER_PLAYER, otherUser)
+                    )
+                    .open();
         });
     }
 
@@ -317,7 +309,7 @@ public class AxCosmeticsCommand {
                             return;
                         }
 
-                        TriFunction<User, CosmeticData, CosmeticConfig, Cosmetic<CosmeticConfig>> fetch1 = AxCosmeticsAPI.instance().cosmeticTypes().fetch(fetch.type());
+                        CosmeticBuilder<CosmeticConfig> fetch1 = AxCosmeticsAPI.instance().cosmeticTypes().fetch(fetch.type());
                         if (fetch1 == null) {
                             LogUtils.error("No other fetched with id {}", fetch.type());
                             return;
@@ -338,7 +330,7 @@ public class AxCosmeticsCommand {
                             return;
                         }
 
-                        TriFunction<User, CosmeticData, CosmeticConfig, Cosmetic<CosmeticConfig>> fetch1 = AxCosmeticsAPI.instance().cosmeticTypes().fetch(fetch.type());
+                        CosmeticBuilder<CosmeticConfig> fetch1 = AxCosmeticsAPI.instance().cosmeticTypes().fetch(fetch.type());
                         if (fetch1 == null) {
                             LogUtils.error("No other fetched with id {}", fetch.type());
                             return;
@@ -361,36 +353,26 @@ public class AxCosmeticsCommand {
 
     @Subcommand("admin give")
     @CommandPermission("axcosmetics.command.admin.give")
-    public void give(CommandSender sender) {
-        CompletableFuture<OfflinePlayer> playerFuture = args.getUnchecked("player");
-        if (playerFuture == null) {
-            return;
-        }
+    public void give(CommandSender sender, OfflinePlayer player, BuildableCosmeticData<CosmeticConfig> data) {
 
-        Pair<TriFunction<User, CosmeticData, CosmeticConfig, Cosmetic<CosmeticConfig>>, CosmeticConfig> cosmeticBuilder = args.getUnchecked("cosmetic");
-        if (cosmeticBuilder == null) {
-            return;
-        }
 
-        playerFuture.thenAccept(player -> {
-            AxCosmeticsAPI.instance().getUser(player).thenAccept(user -> {
-                Cosmetic<?> cosmetic = cosmeticBuilder.first().apply(user, new CosmeticData(0, 0, 0, System.currentTimeMillis(), false), cosmeticBuilder.second());
+        AxCosmeticsAPI.instance().getUser(player).thenAccept(user -> {
+            Cosmetic<?> cosmetic = data.builder().apply(user, new CosmeticData(0, 0, 0, System.currentTimeMillis(), false), data.config());
 
-                user.addCosmetic(cosmetic).thenRun(() -> {
-                    MessageUtils.sendMessage(sender, Language.prefix, Language.give,
+            user.addCosmetic(cosmetic).thenRun(() -> {
+                MessageUtils.sendMessage(sender, Language.prefix, Language.give,
+                        Placeholder.unparsed("edition", String.valueOf(cosmetic.data().counter())),
+                        Placeholder.unparsed("cosmetic", String.valueOf(cosmetic.config().name())),
+                        Placeholder.unparsed("player", player.getName())
+                );
+
+                Player onlinePlayer = player.getPlayer();
+                if (onlinePlayer != null) {
+                    MessageUtils.sendMessage(onlinePlayer, Language.prefix, Language.receive,
                             Placeholder.unparsed("edition", String.valueOf(cosmetic.data().counter())),
-                            Placeholder.unparsed("cosmetic", String.valueOf(cosmetic.config().name())),
-                            Placeholder.unparsed("player", player.getName())
+                            Placeholder.unparsed("cosmetic", String.valueOf(cosmetic.config().name()))
                     );
-
-                    Player onlinePlayer = player.getPlayer();
-                    if (onlinePlayer != null) {
-                        MessageUtils.sendMessage(onlinePlayer, Language.prefix, Language.receive,
-                                Placeholder.unparsed("edition", String.valueOf(cosmetic.data().counter())),
-                                Placeholder.unparsed("cosmetic", String.valueOf(cosmetic.config().name()))
-                        );
-                    }
-                });
+                }
             });
         });
     }

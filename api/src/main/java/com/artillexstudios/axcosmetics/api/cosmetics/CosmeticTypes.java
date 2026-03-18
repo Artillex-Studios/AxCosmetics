@@ -10,14 +10,14 @@ import java.util.Set;
 
 public interface CosmeticTypes {
 
-    <T extends CosmeticConfig> void register(String identifier, TriFunction<User, CosmeticData, T, Cosmetic<T>> function);
+    <T extends CosmeticConfig> void register(String identifier, CosmeticBuilder<T> function);
 
     void deregister(String identifier);
 
     @Nullable
-    <T extends CosmeticConfig> TriFunction<User, CosmeticData, T, Cosmetic<T>> fetch(String identifier);
+    <T extends CosmeticConfig> CosmeticBuilder<T> fetch(String identifier);
 
-    Collection<TriFunction<User, CosmeticData, ?, Cosmetic<?>>> registered();
+    Collection<CosmeticBuilder<?>> registered();
 
     /**
      * Get the names of the registered cosmetictypes.

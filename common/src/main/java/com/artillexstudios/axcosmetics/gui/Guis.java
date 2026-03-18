@@ -32,65 +32,71 @@ public class Guis {
                 options.setSplitLines(false);
             })
             .build();
-    public static final ConfigurationBackedGui<Gui> GUI = ConfigurationBackedGuiBuilder.builder(COSMETIC_CONFIG, true)
-            .withProvider(Cosmetic.class, cosmetic -> {
-                return new AsyncGuiItemProvider(new GuiItem(ctx -> {
-                    User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(ctx.get(GuiKeys.PLAYER));
+    public static final ConfigurationBackedGui<Gui> GUI;
+    public static final ConfigurationBackedGui<Gui> ADMIN_GUI;
 
-                    WrappedItemStack stack = cosmetic.config().guiItem(cosmetic.data());
-                    if (user.isEquipped(cosmetic)) {
-                        stack.set(DataComponents.enchantmentGlintOverride(), true);
-                    }
+    static {
+        COSMETIC_CONFIG.load();
+        GUI = ConfigurationBackedGuiBuilder.builder(COSMETIC_CONFIG, true)
+                .withProvider(Cosmetic.class, cosmetic -> {
+                    return new AsyncGuiItemProvider(new GuiItem(ctx -> {
+                        User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(ctx.get(GuiKeys.PLAYER));
 
-                    return stack;
-                }, (ctx, event) -> {
+                        WrappedItemStack stack = cosmetic.config().guiItem(cosmetic.data());
+                        if (user.isEquipped(cosmetic)) {
+                            stack.set(DataComponents.enchantmentGlintOverride(), true);
+                        }
+
+                        return stack;
+                    }, (ctx, event) -> {
+                        Player player = ctx.get(GuiKeys.PLAYER);
+                        User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(player);
+                        Gui inv = ctx.get(GuiKeys.GUI);
+                        if (user.isEquipped(cosmetic)) {
+                            user.unequipCosmetic(cosmetic);
+                            MessageUtils.sendMessage(player, Language.prefix, Language.unequip, Placeholder.unparsed("cosmetic", cosmetic.config().name()));
+                            inv.open();
+                        } else {
+                            user.equipCosmetic(cosmetic);
+                            MessageUtils.sendMessage(player, Language.prefix, Language.equip, Placeholder.unparsed("cosmetic", cosmetic.config().name()));
+                            inv.open();
+                        }
+                    }));
+                }).withValues(ctx -> {
                     Player player = ctx.get(GuiKeys.PLAYER);
                     User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(player);
-                    Gui inv = ctx.get(GuiKeys.GUI);
-                    if (user.isEquipped(cosmetic)) {
-                        user.unequipCosmetic(cosmetic);
-                        MessageUtils.sendMessage(player, Language.prefix, Language.unequip, Placeholder.unparsed("cosmetic", cosmetic.config().name()));
-                        inv.open();
-                    } else {
-                        user.equipCosmetic(cosmetic);
-                        MessageUtils.sendMessage(player, Language.prefix, Language.equip, Placeholder.unparsed("cosmetic", cosmetic.config().name()));
-                        inv.open();
-                    }
-                }));
-            }).withValues(ctx -> {
-                Player player = ctx.get(GuiKeys.PLAYER);
-                User user = AxCosmeticsAPI.instance().getUserIfLoadedImmediately(player);
-                return () -> new ArrayList<>(user.getCosmetics());
-            }).build();
-    public static final ConfigurationBackedGui<Gui> ADMIN_GUI = ConfigurationBackedGuiBuilder.builder(COSMETIC_CONFIG, true)
-            .withProvider(Cosmetic.class, cosmetic -> {
-                return new AsyncGuiItemProvider(new GuiItem(ctx -> {
+                    return () -> new ArrayList<>(user.getCosmetics());
+                }).build();
+        ADMIN_GUI = ConfigurationBackedGuiBuilder.builder(COSMETIC_CONFIG, true)
+                .withProvider(Cosmetic.class, cosmetic -> {
+                    return new AsyncGuiItemProvider(new GuiItem(ctx -> {
+                        User user = ctx.get(OTHER_PLAYER);
+
+                        WrappedItemStack stack = cosmetic.config().guiItem(cosmetic.data());
+                        if (user.isEquipped(cosmetic)) {
+                            stack.set(DataComponents.enchantmentGlintOverride(), true);
+                        }
+
+                        return stack;
+                    }, (ctx, event) -> {
+                        User other = ctx.get(OTHER_PLAYER);
+                        Player player = ctx.get(GuiKeys.PLAYER);
+                        Gui inv = ctx.get(GuiKeys.GUI);
+                        if (other.isEquipped(cosmetic)) {
+                            other.unequipCosmetic(cosmetic);
+                            MessageUtils.sendMessage(player, Language.prefix, Language.unequip, Placeholder.unparsed("cosmetic", cosmetic.config().name()));
+                            inv.open();
+                        } else {
+                            other.equipCosmetic(cosmetic);
+                            MessageUtils.sendMessage(player, Language.prefix, Language.equip, Placeholder.unparsed("cosmetic", cosmetic.config().name()));
+                            inv.open();
+                        }
+                    }));
+                }).withValues(ctx -> {
                     User user = ctx.get(OTHER_PLAYER);
-
-                    WrappedItemStack stack = cosmetic.config().guiItem(cosmetic.data());
-                    if (user.isEquipped(cosmetic)) {
-                        stack.set(DataComponents.enchantmentGlintOverride(), true);
-                    }
-
-                    return stack;
-                }, (ctx, event) -> {
-                    User other = ctx.get(OTHER_PLAYER);
-                    Player player = ctx.get(GuiKeys.PLAYER);
-                    Gui inv = ctx.get(GuiKeys.GUI);
-                    if (other.isEquipped(cosmetic)) {
-                        other.unequipCosmetic(cosmetic);
-                        MessageUtils.sendMessage(player, Language.prefix, Language.unequip, Placeholder.unparsed("cosmetic", cosmetic.config().name()));
-                        inv.open();
-                    } else {
-                        other.equipCosmetic(cosmetic);
-                        MessageUtils.sendMessage(player, Language.prefix, Language.equip, Placeholder.unparsed("cosmetic", cosmetic.config().name()));
-                        inv.open();
-                    }
-                }));
-            }).withValues(ctx -> {
-                User user = ctx.get(OTHER_PLAYER);
-                return () -> new ArrayList<>(user.getCosmetics());
-            }).onOpen(event -> {
-                MessageUtils.sendMessage(event.getPlayer(), Language.prefix, Language.adminGuiMessage);
-            }).build();
+                    return () -> new ArrayList<>(user.getCosmetics());
+                }).onOpen(event -> {
+                    MessageUtils.sendMessage(event.getPlayer(), Language.prefix, Language.adminGuiMessage);
+                }).build();
+    }
 }

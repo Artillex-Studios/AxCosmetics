@@ -3,6 +3,7 @@ package com.artillexstudios.axcosmetics.cosmetics;
 import com.artillexstudios.axapi.utils.UncheckedUtils;
 import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
+import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticBuilder;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
 import com.artillexstudios.axcosmetics.api.user.User;
@@ -15,10 +16,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CosmeticTypes implements com.artillexstudios.axcosmetics.api.cosmetics.CosmeticTypes {
-    private final ConcurrentHashMap<String, TriFunction<User, CosmeticData, ?, Cosmetic<?>>> identifierToCosmeticTypeMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, CosmeticBuilder<?>> identifierToCosmeticTypeMap = new ConcurrentHashMap<>();
 
     @Override
-    public <T extends CosmeticConfig> void register(String identifier, TriFunction<User, CosmeticData, T, Cosmetic<T>> function) {
+    public <T extends CosmeticConfig> void register(String identifier, CosmeticBuilder<T> function) {
         if (this.identifierToCosmeticTypeMap.containsKey(identifier)) {
             LogUtils.warn("Failed to register cosmetic type with identifier {} as it is already loaded!", identifier);
             return;
@@ -39,12 +40,12 @@ public class CosmeticTypes implements com.artillexstudios.axcosmetics.api.cosmet
     }
 
     @Override
-    public @Nullable <T extends CosmeticConfig> TriFunction<User, CosmeticData, T, Cosmetic<T>> fetch(String identifier) {
+    public @Nullable <T extends CosmeticConfig> CosmeticBuilder<T> fetch(String identifier) {
         return UncheckedUtils.unsafeCast(this.identifierToCosmeticTypeMap.get(identifier));
     }
 
     @Override
-    public Collection<TriFunction<User, CosmeticData, ?, Cosmetic<?>>> registered() {
+    public Collection<CosmeticBuilder<?>> registered() {
         return Collections.unmodifiableCollection(this.identifierToCosmeticTypeMap.values());
     }
 

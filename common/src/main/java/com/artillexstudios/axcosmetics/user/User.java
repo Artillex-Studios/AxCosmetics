@@ -4,6 +4,7 @@ import com.artillexstudios.axapi.utils.UncheckedUtils;
 import com.artillexstudios.axapi.utils.logging.LogUtils;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
 import com.artillexstudios.axcosmetics.api.cosmetics.Cosmetic;
+import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticBuilder;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticData;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
 import com.artillexstudios.axcosmetics.api.cosmetics.config.CosmeticConfig;
@@ -341,8 +342,8 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
                 continue;
             }
 
-            TriFunction<com.artillexstudios.axcosmetics.api.user.User, CosmeticData, CosmeticConfig, Cosmetic<CosmeticConfig>> fetch1 = AxCosmeticsAPI.instance().cosmeticTypes().fetch(cosmeticConfig.type());
-            if (fetch1 == null) {
+            CosmeticBuilder<CosmeticConfig> builder = AxCosmeticsAPI.instance().cosmeticTypes().fetch(cosmeticConfig.type());
+            if (builder == null) {
                 if (Config.debug) {
                     LogUtils.debug("Couldn't find cosmetic provider for type: {}!", cosmeticConfig.type());
                 }
@@ -352,7 +353,7 @@ public final class User implements com.artillexstudios.axcosmetics.api.user.User
             if (Config.debug) {
                 LogUtils.debug("Adding cosmetic!");
             }
-            Cosmetic<?> cosmetic = fetch1.apply(this, new CosmeticData(0, 0, 0, System.currentTimeMillis(), true), cosmeticConfig);
+            Cosmetic<?> cosmetic = builder.apply(this, new CosmeticData(0, 0, 0, System.currentTimeMillis(), true), cosmeticConfig);
             this.addCosmetic(cosmetic);
         }
     }

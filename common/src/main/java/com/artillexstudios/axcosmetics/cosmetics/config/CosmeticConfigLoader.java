@@ -44,7 +44,7 @@ public final class CosmeticConfigLoader {
         configuration.load();
         List<CompletableFuture<?>> futures = new ArrayList<>();
 
-        for (Object objectKey : configuration.keys()) {
+        for (Object objectKey : configuration.getKeys()) {
             String key = objectKey.toString();
             String type = configuration.getString(key + ".type");
             if (type == null || type.isBlank()) {

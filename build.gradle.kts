@@ -2,6 +2,7 @@ plugins {
     id("java")
     id("maven-publish")
     id("com.gradleup.shadow") version "9.4.0"
+    id("xyz.jpenilla.run-paper") version "3.0.2"
 }
 
 group = "com.artillexstudios.axcosmetics"
@@ -32,7 +33,7 @@ subprojects {
     }
 
     dependencies {
-        implementation("com.artillexstudios.axapi:axapi:2.0.5:all")
+        implementation("com.artillexstudios.axapi:axapi:2.0.6:all")
         implementation("dev.triumphteam:triumph-gui:3.1.12")
         compileOnly("com.github.ben-manes.caffeine:caffeine:3.2.0")
         compileOnly("com.artillexstudios.axvanish:axvanish:1.0.0:all")
@@ -57,5 +58,9 @@ tasks {
         relocate("com.artillexstudios.axapi", "com.artillexstudios.axcosmetics.libs.axapi")
         relocate("dev.triumphteam.gui", "com.artillexstudios.axcosmetics.libs.triumphgui")
         relocate("org.h2", "com.artillexstudios.axcosmetics.libs.h2")
+    }
+
+    runServer {
+        minecraftVersion("1.21.11")
     }
 }

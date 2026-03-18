@@ -15,7 +15,7 @@ import com.artillexstudios.axapi.utils.AsyncUtils;
 import com.artillexstudios.axapi.utils.featureflags.FeatureFlags;
 import com.artillexstudios.axcosmetics.api.AxCosmeticsAPI;
 import com.artillexstudios.axcosmetics.api.cosmetics.CosmeticSlot;
-import com.artillexstudios.axcosmetics.command.AxCosmeticsCommand;
+import com.artillexstudios.axcosmetics.command.CommandRegistration;
 import com.artillexstudios.axcosmetics.config.Config;
 import com.artillexstudios.axcosmetics.config.Language;
 import com.artillexstudios.axcosmetics.cosmetics.CosmeticSlots;
@@ -34,6 +34,7 @@ import com.artillexstudios.axcosmetics.cosmetics.type.NonFirstPersonBackpackCosm
 import com.artillexstudios.axcosmetics.database.DatabaseAccessor;
 import com.artillexstudios.axcosmetics.entitymeta.InteractionMeta;
 import com.artillexstudios.axcosmetics.gui.ActionUnequip;
+import com.artillexstudios.axcosmetics.gui.Guis;
 import com.artillexstudios.axcosmetics.integrations.AxVanishIntegration;
 import com.artillexstudios.axcosmetics.listener.ArmorCosmeticListener;
 import com.artillexstudios.axcosmetics.listener.BackpackCosmeticListener;
@@ -67,6 +68,8 @@ public final class AxCosmeticsPlugin extends AxPlugin {
     @Override
     public void updateFlags() {
         FeatureFlags.PACKET_ENTITY_TRACKER_ENABLED.set(true);
+        FeatureFlags.ENABLE_PACKET_LISTENERS.set(true);
+        FeatureFlags.LISTEN_TO_RIDE_PACKET.set(true);
         FeatureFlags.DEBUG.set(true);
     }
 
@@ -98,7 +101,6 @@ public final class AxCosmeticsPlugin extends AxPlugin {
 
         FeatureFlags.PACKET_ENTITY_TRACKER_THREADS.set(3); // TODO: Maybe configurable?
         EntityMetaFactory.register(EntityType.INTERACTION, InteractionMeta::new);
-        AxCosmeticsCommand.load(this);
 
         AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("helmet"));
         AxCosmeticsAPI.instance().cosmeticSlots().register(new CosmeticSlot("chest_plate"));
@@ -130,8 +132,7 @@ public final class AxCosmeticsPlugin extends AxPlugin {
             Bukkit.getPluginManager().registerEvents(new AxVanishIntegration(), this);
         }
 
-        AxCosmeticsCommand.register();
-        AxCosmeticsCommand.enable();
+        CommandRegistration.INSTANCE.register(this);
         PacketEvents.INSTANCE.addListener(new CosmeticPacketListener());
         if (Config.listenToRidePackets) {
             PacketEvents.INSTANCE.addListener(new RidePacketListener());
@@ -143,7 +144,6 @@ public final class AxCosmeticsPlugin extends AxPlugin {
     @Override
     public void disable() {
         this.ticker.cancel();
-        AxCosmeticsCommand.disable();
         AsyncUtils.stop();
         this.handler.close();
         this.metrics.cancel();
